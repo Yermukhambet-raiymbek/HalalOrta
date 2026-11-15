@@ -33,7 +33,8 @@ No sign-up, and one browser is enough.
 - **Family space.** One person creates a family and shares an invite link.
   Everyone who helps with the baby joins with just a name.
 - **Lessons with quizzes.** Short lessons based on AAP and CDC guidance,
-  each with a link to its source. Quizzes are graded on the server; the
+  each with a link to its source and a picture for every step (original
+  SVG illustrations in `frontend/public/illustrations`). Quizzes are graded on the server; the
   answer key is sent only after a submission.
 - **Family progress.** One table with every member's best result per lesson.
 - **Care tasks with a lesson check.** A task can name the lesson that

@@ -27,6 +27,11 @@ export default function Header() {
     <header className="site-header">
       <div className="site-header-inner">
         <Link to="/" className="brand">
+          <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+            <rect width="32" height="32" rx="9" fill="#2563eb" />
+            <path d="M6 16.5 16 8l10 8.5" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M16 24.5c-6-4-4.4-8.8 0-5.8 4.400-3 6 1.800 0 5.800z" fill="#fff" />
+          </svg>
           LittleVillage
         </Link>
         <nav className="site-nav" aria-label="Main">

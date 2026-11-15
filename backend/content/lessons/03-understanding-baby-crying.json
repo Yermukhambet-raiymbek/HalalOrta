@@ -1,6 +1,7 @@
 {
   "slug": "understanding-baby-crying",
   "title": "Understanding Baby Crying",
+  "cover_image": "cry-respond.svg",
   "objectives": [
     "Understand why babies cry",
     "Respond to crying step by step",
@@ -14,6 +15,15 @@
     "Try safe swaddling, gently stroking baby's head or patting their back, and singing, talking or soft music.",
     "If you start to feel you can't handle the situation, set baby down in a safe location and get help from a family member or friend.",
     "Never shake a baby. Shaking an infant hard can cause blindness, brain damage or even death."
+  ],
+  "step_images": [
+    "cry-is-normal.svg",
+    "cry-check-basics.svg",
+    "cry-respond.svg",
+    "cry-rock-or-walk.svg",
+    "cry-swaddle-and-sing.svg",
+    "cry-take-a-break.svg",
+    "cry-never-shake.svg"
   ],
   "source_title": "AAP HealthyChildren.org: Responding To Your Baby's Cries",
   "source_url": "https://www.healthychildren.org/English/ages-stages/baby/crying-colic/Pages/Responding-to-Your-Babys-Cries.aspx",

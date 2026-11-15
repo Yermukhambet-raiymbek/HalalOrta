@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { api, ApiError, errorMessage, localDate, type Load, type Me, type Today } from "../api";
+import { api, ApiError, errorMessage, illustrationUrl, localDate, type Load, type Me, type Today } from "../api";
 import RequireMember from "../components/RequireMember";
 import { ErrorMessage, Loading } from "../components/Status";
 import TaskItem from "../components/TaskItem";
@@ -78,23 +78,28 @@ function TodayView({ me }: { me: Me }) {
       <section className="card">
         <h2>Your next lesson</h2>
         {next ? (
-          <>
-            <p>
-              <strong>{next.title}</strong>
-              <br />
-              <span className="muted">
-                {next.question_count} questions ·{" "}
-                {next.needed_for_task
-                  ? "one of your open tasks needs this lesson"
-                  : `prepares you to: ${next.related_task}`}
-              </span>
-            </p>
-            <div className="button-row">
-              <Link to={`/learn/${next.slug}`} className="button-link">
-                Start lesson
-              </Link>
+          <div className="next-lesson">
+            {next.cover_image && (
+              <img src={illustrationUrl(next.cover_image)} alt="" width={240} height={180} className="lesson-cover" />
+            )}
+            <div>
+              <p>
+                <strong>{next.title}</strong>
+                <br />
+                <span className="muted">
+                  {next.question_count} questions ·{" "}
+                  {next.needed_for_task
+                    ? "one of your open tasks needs this lesson"
+                    : `prepares you to: ${next.related_task}`}
+                </span>
+              </p>
+              <div className="button-row">
+                <Link to={`/learn/${next.slug}`} className="button-link">
+                  Start lesson
+                </Link>
+              </div>
             </div>
-          </>
+          </div>
         ) : (
           <p className="result-pass">✓ You have passed every lesson.</p>
         )}

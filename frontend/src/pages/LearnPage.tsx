@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { api, ApiError, errorMessage, formatDate, type LessonSummary, type Load } from "../api";
+import { api, ApiError, errorMessage, formatDate, illustrationUrl, type LessonSummary, type Load } from "../api";
 import RequireMember from "../components/RequireMember";
 import { ErrorMessage, Loading } from "../components/Status";
 import { useSession } from "../session";
@@ -47,11 +47,16 @@ function LessonList({ name }: { name: string }) {
         {lessons.data.map((l) => (
           <li key={l.slug}>
             <Link to={`/learn/${l.slug}`} className="card lesson-card">
-              <span className="lesson-title">{l.title}</span>
-              <span className="muted">
-                {l.question_count} questions · prepares you to: {l.related_task}
+              {l.cover_image && (
+                <img src={illustrationUrl(l.cover_image)} alt="" width={240} height={180} className="lesson-cover" />
+              )}
+              <span className="lesson-card-text">
+                <span className="lesson-title">{l.title}</span>
+                <span className="muted">
+                  {l.question_count} questions · prepares you to: {l.related_task}
+                </span>
+                <LessonStatus lesson={l} />
               </span>
-              <LessonStatus lesson={l} />
             </Link>
           </li>
         ))}

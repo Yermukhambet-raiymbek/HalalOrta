@@ -1,6 +1,8 @@
 package content
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -72,6 +74,10 @@ func TestLoadRejectsInvalidLessonFiles(t *testing.T) {
 		{"no objectives", `"objectives": ["a"]`, `"objectives": []`, "objectives must not be empty"},
 		{"bad slug", `"slug": "test-lesson"`, `"slug": "Test Lesson"`, "slug"},
 		{"bad source url", `"https://example.org/page"`, `"example.org"`, "source_url"},
+		{"two images for one step", `"steps": ["b"]`, `"steps": ["b"], "step_images": ["a.svg", "b.svg"]`, "one image per step"},
+		{"step image with a folder", `"steps": ["b"]`, `"steps": ["b"], "step_images": ["../a.svg"]`, "step_images: item 1"},
+		{"step image is a URL", `"steps": ["b"]`, `"steps": ["b"], "step_images": ["https://example.org/a.png"]`, "step_images: item 1"},
+		{"cover image is not a picture", `"title": "Test"`, `"title": "Test", "cover_image": "cover.exe"`, "cover_image"},
 		{"unknown field", `"title": "Test"`, `"title": "Test", "extra": 1`, "invalid JSON"},
 		{"broken JSON", `"questions": [`, `"questions": `, "invalid JSON"},
 	}
@@ -89,6 +95,40 @@ func TestLoadRejectsInvalidLessonFiles(t *testing.T) {
 				t.Fatalf("error %q should name the file and contain %q", err, tc.wantErr)
 			}
 		})
+	}
+}
+
+func TestLoadKeepsLessonImages(t *testing.T) {
+	body := strings.Replace(validLesson, `"steps": ["b"]`, `"steps": ["b"], "step_images": ["step-one.svg"], "cover_image": "cover.jpg"`, 1)
+	lessons, err := load(map[string]string{"01.json": body})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if l := lessons[0]; l.CoverImage != "cover.jpg" || len(l.StepImages) != 1 || l.StepImages[0] != "step-one.svg" {
+		t.Fatalf("images were not loaded: %+v", l)
+	}
+}
+
+// Every picture named by an embedded lesson must exist in the frontend.
+func TestEmbeddedLessonImagesExist(t *testing.T) {
+	const dir = "../../frontend/public/illustrations"
+	if _, err := os.Stat(dir); err != nil {
+		t.Skipf("frontend illustrations are not available here: %v", err)
+	}
+	lessons, err := LoadEmbedded()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, l := range lessons {
+		if len(l.StepImages) != len(l.Steps) || l.CoverImage == "" {
+			t.Errorf("lesson %s: want a cover and one image per step, got cover %q and %d images for %d steps",
+				l.Slug, l.CoverImage, len(l.StepImages), len(l.Steps))
+		}
+		for _, img := range append([]string{l.CoverImage}, l.StepImages...) {
+			if _, err := os.Stat(filepath.Join(dir, img)); err != nil {
+				t.Errorf("lesson %s: image %s is missing: %v", l.Slug, img, err)
+			}
+		}
 	}
 }
 

@@ -35,7 +35,12 @@ type Lesson struct {
 	SourceURL   string
 	RelatedTask string
 	Disclaimer  string
-	Questions   []Question
+	// CoverImage is the lesson's picture, or "". StepImages is empty or has
+	// one picture per step. Both hold file names that the frontend serves
+	// from /illustrations/.
+	CoverImage string
+	StepImages []string
+	Questions  []Question
 }
 
 // Question is one quiz question. CorrectIndex and Explanation are the
@@ -58,6 +63,8 @@ type lessonFile struct {
 	SourceURL   string         `json:"source_url"`
 	RelatedTask string         `json:"related_task"`
 	Disclaimer  string         `json:"disclaimer"`
+	CoverImage  string         `json:"cover_image"`
+	StepImages  []string       `json:"step_images"`
 	Questions   []questionFile `json:"questions"`
 }
 
@@ -69,6 +76,9 @@ type questionFile struct {
 }
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+
+// imagePattern allows a plain file name only: no folders, no URLs.
+var imagePattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*\.(svg|png|jpg|jpeg|webp)$`)
 
 // LoadEmbedded loads the lessons built into the binary.
 func LoadEmbedded() ([]Lesson, error) {
@@ -138,6 +148,17 @@ func parse(raw []byte) (Lesson, error) {
 	if err := nonEmptyList("steps", f.Steps); err != nil {
 		return Lesson{}, err
 	}
+	if f.CoverImage != "" && !imagePattern.MatchString(f.CoverImage) {
+		return Lesson{}, fmt.Errorf("cover_image %q must be a file name such as sleep-on-back.svg", f.CoverImage)
+	}
+	if len(f.StepImages) != 0 && len(f.StepImages) != len(f.Steps) {
+		return Lesson{}, fmt.Errorf("step_images needs one image per step: %d steps, %d images", len(f.Steps), len(f.StepImages))
+	}
+	for i, img := range f.StepImages {
+		if !imagePattern.MatchString(img) {
+			return Lesson{}, fmt.Errorf("step_images: item %d %q must be a file name such as sleep-on-back.svg", i+1, img)
+		}
+	}
 	if len(f.Questions) < MinQuestions {
 		return Lesson{}, fmt.Errorf("needs at least %d questions, has %d", MinQuestions, len(f.Questions))
 	}
@@ -145,6 +166,7 @@ func parse(raw []byte) (Lesson, error) {
 	lesson := Lesson{
 		Slug: f.Slug, Title: f.Title, Objectives: f.Objectives, Steps: f.Steps,
 		SourceTitle: f.SourceTitle, SourceURL: f.SourceURL, RelatedTask: f.RelatedTask, Disclaimer: f.Disclaimer,
+		CoverImage: f.CoverImage, StepImages: f.StepImages,
 	}
 	for i, q := range f.Questions {
 		n := i + 1

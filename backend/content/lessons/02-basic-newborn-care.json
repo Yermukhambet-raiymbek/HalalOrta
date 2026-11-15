@@ -1,6 +1,7 @@
 {
   "slug": "basic-newborn-care",
   "title": "Basic Newborn Care: Bath Time",
+  "cover_image": "bath-support-head.svg",
   "objectives": [
     "Know when sponge baths are needed instead of tub baths",
     "Prepare a bath that is safe for a newborn",
@@ -12,6 +13,13 @@
     "For a tub bath, fill the basin with 2 inches of water that feels warm, not hot, on the inside of your wrist or elbow.",
     "Use one hand to support baby's head and the other to guide baby into the water, feet first.",
     "Never leave a baby alone in the bath, even for an instant."
+  ],
+  "step_images": [
+    "bath-sponge.svg",
+    "bath-three-a-week.svg",
+    "bath-warm-water.svg",
+    "bath-support-head.svg",
+    "bath-never-alone.svg"
   ],
   "source_title": "AAP HealthyChildren.org: Bathing Your Baby",
   "source_url": "https://www.healthychildren.org/English/ages-stages/baby/bathing-skin-care/Pages/Bathing-Your-Newborn.aspx",

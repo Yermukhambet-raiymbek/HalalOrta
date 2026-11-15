@@ -36,26 +36,39 @@ export default function HomePage() {
 
   return (
     <>
-      <section className="intro">
-        <h1>Care for your baby as a family</h1>
-        <p>
-          LittleVillage gives everyone who helps with the baby one shared family space. Start yours here, then
-          invite the others with a link. No sign-up and no passwords: this browser remembers you.
-        </p>
-        <ol className="plain-list how-it-works">
-          <li>
-            <strong>Learn together.</strong> Parents, grandparents and other helpers take short lessons on baby care,
-            each with a quiz.
-          </li>
-          <li>
-            <strong>See who is prepared.</strong> Everyone's results are in one family table.
-          </li>
-          <li>
-            <strong>Share the care.</strong> Assign tasks such as a nap or a bath. Each task shows whether the person
-            doing it has passed the lesson for it.
-          </li>
-        </ol>
+      <section className="hero">
+        <div>
+          <h1>Care for your baby as a family</h1>
+          <p className="hero-lead">
+            LittleVillage gets parents, grandparents and other helpers ready to care for the baby, together.
+          </p>
+          <p className="muted">No sign-up and no passwords: this browser remembers you.</p>
+        </div>
+        <img
+          src="/illustrations/family.svg"
+          alt="A grandmother, a mother and a father with a baby under one roof"
+          width={480}
+          height={260}
+        />
       </section>
+
+      <ol className="feature-list">
+        <li>
+          <span className="step-number">1</span>
+          <strong>Learn together</strong>
+          <span>Short illustrated lessons on baby care, each with a quiz.</span>
+        </li>
+        <li>
+          <span className="step-number">2</span>
+          <strong>See who is prepared</strong>
+          <span>Everyone's results in one family table.</span>
+        </li>
+        <li>
+          <span className="step-number">3</span>
+          <strong>Share the care</strong>
+          <span>Each task shows whether the person doing it has passed the lesson for it.</span>
+        </li>
+      </ol>
 
       <section className="card">
         <h2>Create your family</h2>

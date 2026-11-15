@@ -64,6 +64,9 @@ function FamilyView({ me }: { me: Me }) {
           {members.map((m) => (
             <li key={m.id}>
               <span className="member-name">
+                <span className={`avatar avatar-${m.relationship.toLowerCase()}`} aria-hidden="true">
+                  {m.name.charAt(0).toUpperCase()}
+                </span>
                 {m.name}
                 {m.id === me.member.id && <span className="badge">You</span>}
               </span>

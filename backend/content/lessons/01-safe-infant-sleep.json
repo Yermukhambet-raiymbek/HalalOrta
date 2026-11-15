@@ -1,6 +1,7 @@
 {
   "slug": "safe-infant-sleep",
   "title": "Safe Infant Sleep",
+  "cover_image": "sleep-on-back.svg",
   "objectives": [
     "Put baby down safely for naps and at night",
     "Set up a safe sleep space",
@@ -13,6 +14,14 @@
     "Keep baby's crib or bassinet in the room where you sleep, ideally until baby is at least 6 months old.",
     "Do not cover baby's head, and do not let baby get too hot.",
     "Offer a pacifier at nap time and bedtime. If baby is breastfed, you may want to wait until breastfeeding is well established."
+  ],
+  "step_images": [
+    "sleep-on-back.svg",
+    "sleep-flat-surface.svg",
+    "sleep-nothing-soft.svg",
+    "sleep-same-room.svg",
+    "sleep-not-too-hot.svg",
+    "sleep-pacifier.svg"
   ],
   "source_title": "CDC: Providing Care for Babies to Sleep Safely",
   "source_url": "https://www.cdc.gov/sudden-infant-death/sleep-safely/index.html",

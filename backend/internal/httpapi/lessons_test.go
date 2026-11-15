@@ -17,6 +17,7 @@ var testLesson = content.Lesson{
 	Objectives: []string{"objective"}, Steps: []string{"step one", "step two"},
 	SourceTitle: "Source", SourceURL: "https://example.org/source",
 	RelatedTask: "Test task", Disclaimer: "Not medical advice.",
+	CoverImage: "cover.svg", StepImages: []string{"step-one.svg", "step-two.svg"},
 	Questions: []content.Question{
 		{Prompt: "Q1", Options: []string{"a", "b", "c", "d"}, CorrectIndex: 1, Explanation: "SECRET-EXPLANATION-1"},
 		{Prompt: "Q2", Options: []string{"a", "b", "c", "d"}, CorrectIndex: 0, Explanation: "SECRET-EXPLANATION-2"},
@@ -182,6 +183,27 @@ func TestQuizRejectsBadAnswers(t *testing.T) {
 	}
 }
 
+// A lesson without pictures answers with an empty list, not null.
+func TestLessonWithoutImages(t *testing.T) {
+	t.Parallel()
+	srv, _ := newServer(t)
+	b := newBrowser(t, srv)
+	b.createFamily("Plain", "Ann", "Mom")
+
+	resp, err := b.http.Get(srv.URL + "/api/lessons/other-lesson")
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if !strings.Contains(string(raw), `"step_images":[]`) || !strings.Contains(string(raw), `"cover_image":""`) {
+		t.Fatalf("lesson without images: %s", raw)
+	}
+	if ls := b.lessons(); ls[0].CoverImage != "cover.svg" || ls[1].CoverImage != "" {
+		t.Fatalf("covers in the lesson list: %+v", ls)
+	}
+}
+
 func TestLessonReplyHasNoAnswerKey(t *testing.T) {
 	t.Parallel()
 	srv, _ := newServer(t)
@@ -208,15 +230,21 @@ func TestLessonReplyHasNoAnswerKey(t *testing.T) {
 		}
 		// Each question has exactly the prompt and the options.
 		var lesson struct {
-			Title     string                       `json:"title"`
-			Steps     []string                     `json:"steps"`
-			Questions []map[string]json.RawMessage `json:"questions"`
+			Title      string                       `json:"title"`
+			Steps      []string                     `json:"steps"`
+			CoverImage string                       `json:"cover_image"`
+			StepImages []string                     `json:"step_images"`
+			Questions  []map[string]json.RawMessage `json:"questions"`
 		}
 		if err := json.Unmarshal(raw, &lesson); err != nil {
 			t.Fatal(err)
 		}
 		if lesson.Title != "Test Lesson" || len(lesson.Steps) != 2 || len(lesson.Questions) != 3 {
 			t.Fatalf("lesson reply: %s", raw)
+		}
+		// One picture per step, in step order, plus the cover.
+		if lesson.CoverImage != "cover.svg" || len(lesson.StepImages) != 2 || lesson.StepImages[1] != "step-two.svg" {
+			t.Fatalf("lesson images: %s", raw)
 		}
 		for i, q := range lesson.Questions {
 			if len(q) != 2 || q["prompt"] == nil || q["options"] == nil {

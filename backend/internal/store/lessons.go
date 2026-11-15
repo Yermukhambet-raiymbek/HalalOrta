@@ -24,6 +24,7 @@ type LessonSummary struct {
 	Slug          string     `json:"slug"`
 	Title         string     `json:"title"`
 	RelatedTask   string     `json:"related_task"`
+	CoverImage    string     `json:"cover_image"`
 	QuestionCount int        `json:"question_count"`
 	Status        string     `json:"status"` // not_started, in_progress or passed
 	BestScore     *int       `json:"best_score"`
@@ -43,6 +44,8 @@ type Lesson struct {
 	SourceURL   string
 	RelatedTask string
 	Disclaimer  string
+	CoverImage  string
+	StepImages  []string
 	Questions   []content.Question
 }
 
@@ -73,16 +76,23 @@ func (s *Store) SyncLessons(ctx context.Context, lessons []content.Lesson) error
 		slugs := make([]string, 0, len(lessons))
 		for i, l := range lessons {
 			slugs = append(slugs, l.Slug)
+			stepImages := l.StepImages
+			if stepImages == nil {
+				stepImages = []string{} // the column is NOT NULL
+			}
 			var lessonID string
 			err := tx.QueryRow(ctx, `
-				INSERT INTO lessons (slug, position, title, objectives, steps, source_title, source_url, related_task, disclaimer)
-				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+				INSERT INTO lessons (slug, position, title, objectives, steps, source_title, source_url, related_task,
+				                     disclaimer, cover_image, step_images)
+				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 				ON CONFLICT (slug) DO UPDATE SET
 					position = EXCLUDED.position, title = EXCLUDED.title, objectives = EXCLUDED.objectives,
 					steps = EXCLUDED.steps, source_title = EXCLUDED.source_title, source_url = EXCLUDED.source_url,
-					related_task = EXCLUDED.related_task, disclaimer = EXCLUDED.disclaimer, updated_at = now()
+					related_task = EXCLUDED.related_task, disclaimer = EXCLUDED.disclaimer,
+					cover_image = EXCLUDED.cover_image, step_images = EXCLUDED.step_images, updated_at = now()
 				RETURNING id`,
 				l.Slug, i, l.Title, l.Objectives, l.Steps, l.SourceTitle, l.SourceURL, l.RelatedTask, l.Disclaimer,
+				l.CoverImage, stepImages,
 			).Scan(&lessonID)
 			if err != nil {
 				return fmt.Errorf("upsert lesson %s: %w", l.Slug, err)
@@ -110,7 +120,7 @@ func (s *Store) SyncLessons(ctx context.Context, lessons []content.Lesson) error
 // ListLessons returns all lessons in order with memberID's best result.
 func (s *Store) ListLessons(ctx context.Context, memberID string) ([]LessonSummary, error) {
 	rows, err := s.pool.Query(ctx, `
-		SELECT l.slug, l.title, l.related_task,
+		SELECT l.slug, l.title, l.related_task, l.cover_image,
 		       (SELECT count(*) FROM questions q WHERE q.lesson_id = l.id),
 		       b.score, b.total, b.passed, b.created_at
 		FROM lessons l
@@ -128,7 +138,7 @@ func (s *Store) ListLessons(ctx context.Context, memberID string) ([]LessonSumma
 	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (LessonSummary, error) {
 		var ls LessonSummary
 		var passed *bool
-		if err := row.Scan(&ls.Slug, &ls.Title, &ls.RelatedTask, &ls.QuestionCount,
+		if err := row.Scan(&ls.Slug, &ls.Title, &ls.RelatedTask, &ls.CoverImage, &ls.QuestionCount,
 			&ls.BestScore, &ls.BestTotal, &passed, &ls.AchievedAt); err != nil {
 			return ls, err
 		}
@@ -158,9 +168,11 @@ func (s *Store) LessonRefs(ctx context.Context) ([]LessonRef, error) {
 func (s *Store) LessonBySlug(ctx context.Context, slug string) (Lesson, error) {
 	var l Lesson
 	err := s.pool.QueryRow(ctx, `
-		SELECT id, slug, title, objectives, steps, source_title, source_url, related_task, disclaimer
+		SELECT id, slug, title, objectives, steps, source_title, source_url, related_task, disclaimer,
+		       cover_image, step_images
 		FROM lessons WHERE slug = $1`, slug,
-	).Scan(&l.ID, &l.Slug, &l.Title, &l.Objectives, &l.Steps, &l.SourceTitle, &l.SourceURL, &l.RelatedTask, &l.Disclaimer)
+	).Scan(&l.ID, &l.Slug, &l.Title, &l.Objectives, &l.Steps, &l.SourceTitle, &l.SourceURL, &l.RelatedTask, &l.Disclaimer,
+		&l.CoverImage, &l.StepImages)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Lesson{}, ErrNotFound
 	}

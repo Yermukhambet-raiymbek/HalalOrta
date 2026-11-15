@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router";
-import { api, ApiError, errorMessage, type AttemptResult, type Lesson, type Load } from "../api";
+import { api, ApiError, errorMessage, illustrationUrl, type AttemptResult, type Lesson, type Load } from "../api";
 import RequireMember from "../components/RequireMember";
 import { ErrorMessage, Loading } from "../components/Status";
 import { useSession } from "../session";
@@ -67,9 +67,18 @@ function LessonView({ slug }: { slug: string }) {
 
       <section className="card">
         <h2>Steps</h2>
-        <ol className="plain-list">
-          {l.steps.map((s) => (
-            <li key={s}>{s}</li>
+        <ol className="step-grid">
+          {l.steps.map((s, i) => (
+            <li key={s} className="step-card">
+              {l.step_images[i] && (
+                // Decorative: the step text next to it says the same thing.
+                <img src={illustrationUrl(l.step_images[i])} alt="" width={240} height={180} loading="lazy" />
+              )}
+              <p>
+                <span className="step-number">{i + 1}</span>
+                {s}
+              </p>
+            </li>
           ))}
         </ol>
         <p>

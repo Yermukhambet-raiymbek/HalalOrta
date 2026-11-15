@@ -19,15 +19,18 @@ type lessonHandlers struct {
 // lessonResponse is a lesson as the client sees it before answering:
 // questions carry no correct_index and no explanation.
 type lessonResponse struct {
-	Slug        string           `json:"slug"`
-	Title       string           `json:"title"`
-	Objectives  []string         `json:"objectives"`
-	Steps       []string         `json:"steps"`
-	SourceTitle string           `json:"source_title"`
-	SourceURL   string           `json:"source_url"`
-	RelatedTask string           `json:"related_task"`
-	Disclaimer  string           `json:"disclaimer"`
-	Questions   []publicQuestion `json:"questions"`
+	Slug        string   `json:"slug"`
+	Title       string   `json:"title"`
+	Objectives  []string `json:"objectives"`
+	Steps       []string `json:"steps"`
+	SourceTitle string   `json:"source_title"`
+	SourceURL   string   `json:"source_url"`
+	RelatedTask string   `json:"related_task"`
+	Disclaimer  string   `json:"disclaimer"`
+	CoverImage  string   `json:"cover_image"`
+	// StepImages is empty or has one image file name per step.
+	StepImages []string         `json:"step_images"`
+	Questions  []publicQuestion `json:"questions"`
 }
 
 type publicQuestion struct {
@@ -78,7 +81,8 @@ func (h *lessonHandlers) get(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, lessonResponse{
 		Slug: lesson.Slug, Title: lesson.Title, Objectives: lesson.Objectives, Steps: lesson.Steps,
 		SourceTitle: lesson.SourceTitle, SourceURL: lesson.SourceURL, RelatedTask: lesson.RelatedTask,
-		Disclaimer: lesson.Disclaimer, Questions: questions,
+		Disclaimer: lesson.Disclaimer, CoverImage: lesson.CoverImage, StepImages: lesson.StepImages,
+		Questions: questions,
 	})
 }
 

@@ -58,6 +58,8 @@ export type LessonSummary = {
   slug: string;
   title: string;
   related_task: string;
+  /** Picture file name, or "" when the lesson has none. */
+  cover_image: string;
   question_count: number;
   status: "not_started" | "in_progress" | "passed";
   best_score: number | null;
@@ -75,6 +77,9 @@ export type Lesson = {
   source_url: string;
   related_task: string;
   disclaimer: string;
+  cover_image: string;
+  /** Empty, or one picture file name per step, in step order. */
+  step_images: string[];
   questions: { prompt: string; options: string[] }[];
 };
 
@@ -111,6 +116,7 @@ export type NextLesson = {
   slug: string;
   title: string;
   related_task: string;
+  cover_image: string;
   question_count: number;
   /** True when one of the member's open tasks requires this lesson. */
   needed_for_task: boolean;
@@ -206,6 +212,11 @@ export const api = {
     request<Me>("POST", "/api/families/join", input),
   switchMember: (memberId: string) => request<Me>("POST", "/api/session/switch", { member_id: memberId }),
 };
+
+/** URL of a lesson picture; the files live in public/illustrations. */
+export function illustrationUrl(fileName: string): string {
+  return `/illustrations/${encodeURIComponent(fileName)}`;
+}
 
 /** "Nov 15" style date for an API timestamp. */
 export function formatDate(iso: string): string {

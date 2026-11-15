@@ -64,6 +64,7 @@ type NextLesson struct {
 	Slug          string `json:"slug"`
 	Title         string `json:"title"`
 	RelatedTask   string `json:"related_task"`
+	CoverImage    string `json:"cover_image"`
 	QuestionCount int    `json:"question_count"`
 	// NeededForTask is true when one of the member's open tasks requires it.
 	NeededForTask bool `json:"needed_for_task"`
@@ -219,7 +220,7 @@ func (s *Store) SetTaskStatus(ctx context.Context, familyID, memberID, taskID, s
 func (s *Store) NextLessonFor(ctx context.Context, memberID string) (*NextLesson, error) {
 	var n NextLesson
 	err := s.pool.QueryRow(ctx, `
-		SELECT l.slug, l.title, l.related_task,
+		SELECT l.slug, l.title, l.related_task, l.cover_image,
 		       (SELECT count(*) FROM questions q WHERE q.lesson_id = l.id),
 		       EXISTS (
 		           SELECT 1 FROM tasks t
@@ -232,7 +233,7 @@ func (s *Store) NextLessonFor(ctx context.Context, memberID string) (*NextLesson
 		)
 		ORDER BY needed DESC, l.position
 		LIMIT 1`, memberID,
-	).Scan(&n.Slug, &n.Title, &n.RelatedTask, &n.QuestionCount, &n.NeededForTask)
+	).Scan(&n.Slug, &n.Title, &n.RelatedTask, &n.CoverImage, &n.QuestionCount, &n.NeededForTask)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
