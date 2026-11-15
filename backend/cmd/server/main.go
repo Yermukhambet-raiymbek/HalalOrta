@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"littlevillage/content"
 	"littlevillage/internal/config"
 	"littlevillage/internal/db"
 	"littlevillage/internal/httpapi"
@@ -53,7 +54,19 @@ func run() error {
 	}
 	slog.Info("database schema is up to date", "applied_now", applied)
 
-	router := httpapi.NewRouter(store.New(pool), httpapi.Options{
+	// Lesson files are validated before anything is served: a bad file
+	// stops the start with an error that names the file.
+	lessons, err := content.LoadEmbedded()
+	if err != nil {
+		return fmt.Errorf("lesson content: %w", err)
+	}
+	st := store.New(pool)
+	if err := st.SyncLessons(ctx, lessons); err != nil {
+		return fmt.Errorf("sync lessons: %w", err)
+	}
+	slog.Info("lessons synced", "count", len(lessons))
+
+	router := httpapi.NewRouter(st, httpapi.Options{
 		StaticDir:    cfg.StaticDir,
 		CookieSecure: cfg.CookieSecure,
 	})

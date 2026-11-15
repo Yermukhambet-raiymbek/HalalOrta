@@ -1,0 +1,67 @@
+{
+  "slug": "safe-infant-sleep",
+  "title": "Safe Infant Sleep",
+  "objectives": [
+    "Put baby down safely for naps and at night",
+    "Set up a safe sleep space",
+    "Know what to keep out of the crib"
+  ],
+  "steps": [
+    "Place baby on their back for every sleep, naps and at night.",
+    "Use a firm, flat sleep surface that is not at an angle or inclined, covered by a fitted sheet.",
+    "Keep soft bedding out of the sleep area: no blankets, pillows, bumper pads or soft toys.",
+    "Keep baby's crib or bassinet in the room where you sleep, ideally until baby is at least 6 months old.",
+    "Do not cover baby's head, and do not let baby get too hot.",
+    "Offer a pacifier at nap time and bedtime. If baby is breastfed, you may want to wait until breastfeeding is well established."
+  ],
+  "source_title": "CDC: Providing Care for Babies to Sleep Safely",
+  "source_url": "https://www.cdc.gov/sudden-infant-death/sleep-safely/index.html",
+  "related_task": "Put baby down for a nap",
+  "disclaimer": "Based on CDC guidance. Not medical advice.",
+  "questions": [
+    {
+      "prompt": "You are putting baby down for a short daytime nap. How should baby be placed?",
+      "options": [
+        "On their side, so they can see the room",
+        "On their back, the same as at night",
+        "On their tummy, because naps are short",
+        "Any position is fine during the day"
+      ],
+      "correct_index": 1,
+      "explanation": "Babies are placed on their back for all sleep times, naps and at night."
+    },
+    {
+      "prompt": "Which sleep space follows the guidance?",
+      "options": [
+        "A firm, flat mattress covered by a fitted sheet, with nothing else on it",
+        "A firm mattress with a pillow for comfort",
+        "A mattress raised at an angle with a rolled blanket",
+        "A crib with bumper pads and a favorite soft toy"
+      ],
+      "correct_index": 0,
+      "explanation": "The sleep surface is firm, flat and not inclined, covered by a fitted sheet. Blankets, pillows, bumper pads and soft toys stay out."
+    },
+    {
+      "prompt": "Where should baby's crib or bassinet be?",
+      "options": [
+        "In a separate room from the first night",
+        "In the living room, near the TV",
+        "Wherever it is warmest in the home",
+        "In the room where you sleep, ideally until baby is at least 6 months old"
+      ],
+      "correct_index": 3,
+      "explanation": "The guidance is to keep baby's sleep area in the same room where you sleep, ideally until baby is at least 6 months old."
+    },
+    {
+      "prompt": "Which of these should you avoid when baby sleeps?",
+      "options": [
+        "Offering a pacifier at bedtime",
+        "Using a fitted sheet on the mattress",
+        "Covering baby's head",
+        "Placing baby on their back"
+      ],
+      "correct_index": 2,
+      "explanation": "Do not cover baby's head or let baby get too hot. A pacifier, a fitted sheet and back sleeping are all part of the guidance."
+    }
+  ]
+}

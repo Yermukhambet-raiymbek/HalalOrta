@@ -17,15 +17,22 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"littlevillage/content"
 	"littlevillage/internal/auth"
 	"littlevillage/internal/httpapi"
 	"littlevillage/internal/store"
 	"littlevillage/internal/testdb"
 )
 
+type memberView struct {
+	store.Member
+	Progress []store.MemberProgress `json:"progress"`
+}
+
 type familyView struct {
-	Family  store.FamilyRef `json:"family"`
-	Members []store.Member  `json:"members"`
+	Family  store.FamilyRef   `json:"family"`
+	Members []memberView      `json:"members"`
+	Lessons []store.LessonRef `json:"lessons"`
 	Invite  struct {
 		Token string `json:"token"`
 		Path  string `json:"path"`
@@ -42,7 +49,11 @@ type apiError struct {
 func newServer(t *testing.T) (*httptest.Server, *pgxpool.Pool) {
 	t.Helper()
 	pool := testdb.New(t)
-	srv := httptest.NewServer(httpapi.NewRouter(store.New(pool), httpapi.Options{StaticDir: t.TempDir()}))
+	st := store.New(pool)
+	if err := st.SyncLessons(context.Background(), []content.Lesson{testLesson, otherLesson}); err != nil {
+		t.Fatalf("sync lessons: %v", err)
+	}
+	srv := httptest.NewServer(httpapi.NewRouter(st, httpapi.Options{StaticDir: t.TempDir()}))
 	t.Cleanup(srv.Close)
 	return srv, pool
 }
@@ -122,6 +133,16 @@ func (b *browser) me() store.Me {
 	return me
 }
 
+// isAnonymous reports whether GET /api/me answers 200 with a null member.
+func (b *browser) isAnonymous() bool {
+	b.t.Helper()
+	var reply struct {
+		Member *store.Member `json:"member"`
+	}
+	status := b.call(http.MethodGet, "/api/me", nil, &reply)
+	return status == http.StatusOK && reply.Member == nil
+}
+
 func (b *browser) family() familyView {
 	b.t.Helper()
 	var fam familyView
@@ -147,7 +168,7 @@ func mustURL(t *testing.T, raw string) *url.URL {
 	return u
 }
 
-func memberNames(ms []store.Member) []string {
+func memberNames(ms []memberView) []string {
 	names := make([]string, len(ms))
 	for i, m := range ms {
 		names[i] = m.Name
@@ -258,8 +279,8 @@ func TestInviteLookupAndUnknownToken(t *testing.T) {
 	if status := stranger.call(http.MethodGet, "/api/invites/no-such-token", nil, &e); status != http.StatusNotFound {
 		t.Fatalf("get unknown invite: status %d, want 404", status)
 	}
-	if status := stranger.call(http.MethodGet, "/api/me", nil, nil); status != http.StatusUnauthorized {
-		t.Fatalf("failed join left a session: /api/me status %d", status)
+	if !stranger.isAnonymous() {
+		t.Fatal("failed join left a session")
 	}
 }
 
@@ -302,8 +323,8 @@ func TestNameValidation(t *testing.T) {
 				if status != tc.wantStatus || e.Error.Code != "validation_error" || e.Error.Message == "" {
 					t.Fatalf("status %d error %+v, want %d validation_error", status, e.Error, tc.wantStatus)
 				}
-				if status := b.call(http.MethodGet, "/api/me", nil, nil); status != http.StatusUnauthorized {
-					t.Fatalf("invalid request created a session: /api/me status %d", status)
+				if !b.isAnonymous() {
+					t.Fatal("invalid request created a session")
 				}
 				return
 			}
@@ -327,9 +348,11 @@ func TestPrivateEndpointsNeedSession(t *testing.T) {
 	t.Parallel()
 	srv, _ := newServer(t)
 	endpoints := []struct{ method, path string }{
-		{http.MethodGet, "/api/me"},
 		{http.MethodGet, "/api/family"},
 		{http.MethodPost, "/api/session/switch"},
+		{http.MethodGet, "/api/lessons"},
+		{http.MethodGet, "/api/lessons/" + testLesson.Slug},
+		{http.MethodPost, "/api/lessons/" + testLesson.Slug + "/attempts"},
 	}
 	forged := newBrowser(t, srv)
 	forged.http.Jar.SetCookies(mustURL(t, srv.URL), []*http.Cookie{{Name: auth.CookieName, Value: "forged-token"}})
@@ -341,6 +364,10 @@ func TestPrivateEndpointsNeedSession(t *testing.T) {
 			if status != http.StatusUnauthorized || e.Error.Code != "unauthenticated" {
 				t.Errorf("%s %s: status %d code %q, want 401 unauthenticated", ep.method, ep.path, status, e.Error.Code)
 			}
+		}
+		// /api/me is the exception: 200 with a null member, no console error.
+		if !b.isAnonymous() {
+			t.Error("GET /api/me without a session should be 200 with a null member")
 		}
 	}
 }

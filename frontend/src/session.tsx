@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { api, ApiError, errorMessage, type Me } from "./api";
+import { api, errorMessage, type Me } from "./api";
 
 /** Who is active in this browser, as reported by GET /api/me. */
 export type SessionState =
@@ -23,13 +23,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const reload = useCallback(() => {
     setSession({ status: "loading" });
     api.me().then(
-      (me) => setSession({ status: "ready", me }),
-      (err: unknown) =>
-        setSession(
-          err instanceof ApiError && err.status === 401
-            ? { status: "anonymous" }
-            : { status: "error", message: errorMessage(err) },
-        ),
+      (me) => setSession(me.member === null ? { status: "anonymous" } : { status: "ready", me }),
+      (err: unknown) => setSession({ status: "error", message: errorMessage(err) }),
     );
   }, []);
 

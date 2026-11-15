@@ -33,9 +33,18 @@ type switchRequest struct {
 }
 
 type familyResponse struct {
-	Family  store.FamilyRef `json:"family"`
-	Members []store.Member  `json:"members"`
-	Invite  inviteLink      `json:"invite"`
+	Family  store.FamilyRef      `json:"family"`
+	Members []memberWithProgress `json:"members"`
+	// Lessons are the columns of the progress table, in order.
+	Lessons []store.LessonRef `json:"lessons"`
+	Invite  inviteLink        `json:"invite"`
+}
+
+// memberWithProgress is a member plus their best result for every lesson
+// they have attempted.
+type memberWithProgress struct {
+	store.Member
+	Progress []store.MemberProgress `json:"progress"`
 }
 
 type inviteLink struct {
@@ -129,9 +138,18 @@ func writeInviteNotFound(w http.ResponseWriter) {
 		"This invite link is not valid. Ask your family for a new link.")
 }
 
-// GET /api/me (private)
+// GET /api/me (public). Without an active member it answers 200 with
+// {"member": null}.
 func (h *familyHandlers) me(w http.ResponseWriter, r *http.Request) {
-	sess, _ := auth.SessionFrom(r.Context())
+	sess, err := h.store.SessionByToken(r.Context(), auth.DeviceToken(r))
+	if errors.Is(err, store.ErrNotFound) {
+		writeJSON(w, http.StatusOK, map[string]any{"member": nil})
+		return
+	}
+	if err != nil {
+		writeInternal(w, r, err)
+		return
+	}
 	me, err := h.store.Me(r.Context(), sess)
 	if err != nil {
 		writeInternal(w, r, err)
@@ -148,9 +166,31 @@ func (h *familyHandlers) family(w http.ResponseWriter, r *http.Request) {
 		writeInternal(w, r, err)
 		return
 	}
+	lessons, err := h.store.LessonRefs(r.Context())
+	if err != nil {
+		writeInternal(w, r, err)
+		return
+	}
+	progress, err := h.store.FamilyProgress(r.Context(), sess.FamilyID)
+	if err != nil {
+		writeInternal(w, r, err)
+		return
+	}
+	byMember := make(map[string][]store.MemberProgress)
+	for _, p := range progress {
+		byMember[p.MemberID] = append(byMember[p.MemberID], p)
+	}
+	members := make([]memberWithProgress, len(fam.Members))
+	for i, m := range fam.Members {
+		members[i] = memberWithProgress{Member: m, Progress: byMember[m.ID]}
+		if members[i].Progress == nil {
+			members[i].Progress = []store.MemberProgress{}
+		}
+	}
 	writeJSON(w, http.StatusOK, familyResponse{
 		Family:  fam.Family,
-		Members: fam.Members,
+		Members: members,
+		Lessons: lessons,
 		Invite:  inviteLink{Token: fam.InviteToken, Path: "/join/" + fam.InviteToken},
 	})
 }

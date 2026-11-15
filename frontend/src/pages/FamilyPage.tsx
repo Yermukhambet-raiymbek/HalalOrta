@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { Navigate } from "react-router";
-import { api, ApiError, errorMessage, type FamilyDetails, type Load, type Me } from "../api";
+import { Link, Navigate } from "react-router";
+import {
+  api,
+  ApiError,
+  errorMessage,
+  formatDate,
+  type FamilyDetails,
+  type FamilyMember,
+  type LessonRef,
+  type Load,
+  type Me,
+} from "../api";
 import { ErrorMessage, Loading } from "../components/Status";
 import { useSession } from "../session";
 
@@ -43,7 +53,7 @@ function FamilyView({ me }: { me: Me }) {
     return <ErrorMessage message={errorMessage(family.error)} onRetry={() => setAttempt((n) => n + 1)} />;
   }
 
-  const { family: info, members, invite } = family.data;
+  const { family: info, members, lessons, invite } = family.data;
   return (
     <>
       <h1>{info.name}</h1>
@@ -67,6 +77,14 @@ function FamilyView({ me }: { me: Me }) {
       </section>
 
       <section className="card">
+        <h2>Learning progress</h2>
+        <ProgressTable members={members} lessons={lessons} />
+        <p>
+          <Link to="/learn">Go to lessons</Link>
+        </p>
+      </section>
+
+      <section className="card">
         <h2>Invite your family</h2>
         <p>Send this link to anyone who helps with the baby. They open it, enter their name, and join.</p>
         <InviteLink path={invite.path} />
@@ -76,6 +94,54 @@ function FamilyView({ me }: { me: Me }) {
         </p>
       </section>
     </>
+  );
+}
+
+/** Members down the side, lessons across the top, best result in each cell. */
+function ProgressTable({ members, lessons }: { members: FamilyMember[]; lessons: LessonRef[] }) {
+  return (
+    <div className="table-scroll">
+      <table className="progress-table">
+        <thead>
+          <tr>
+            <th scope="col">Member</th>
+            {lessons.map((l) => (
+              <th scope="col" key={l.slug}>
+                {l.title}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {members.map((m) => (
+            <tr key={m.id}>
+              <th scope="row">{m.name}</th>
+              {lessons.map((l) => {
+                const p = m.progress.find((x) => x.lesson_slug === l.slug);
+                if (!p) {
+                  return (
+                    <td key={l.slug} data-label={l.title}>
+                      <span className="muted">Not started</span>
+                    </td>
+                  );
+                }
+                // data-label names the lesson when the table is stacked on a phone.
+                return (
+                  <td key={l.slug} data-label={l.title}>
+                    <span>
+                      <span className={p.passed ? "result-pass" : "result-partial"}>
+                        {p.passed ? "✓ Passed" : `${p.best_score}/${p.total}`}
+                      </span>
+                      <span className="cell-date">{formatDate(p.achieved_at)}</span>
+                    </span>
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

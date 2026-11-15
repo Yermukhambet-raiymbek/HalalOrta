@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router";
 import { api, errorMessage, type DeviceMember } from "../api";
 import { useSession } from "../session";
 
@@ -29,6 +29,12 @@ export default function Header() {
         <Link to="/" className="brand">
           LittleVillage
         </Link>
+        {session.status === "ready" && (
+          <nav className="site-nav" aria-label="Main">
+            <NavLink to="/family">Family</NavLink>
+            <NavLink to="/learn">Learn</NavLink>
+          </nav>
+        )}
         {session.status === "ready" &&
           (session.me.device_members.length > 1 ? (
             <label className="switcher">
