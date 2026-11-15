@@ -741,3 +741,246 @@ select:disabled {
 .avatar-grandpa {
   background: #fef3c7;
 }
+
+/* Task categories: one color each, used on tasks and in the schedule. */
+
+.category-care {
+  --cat: #7c3aed;
+  --cat-surface: #f3effe;
+  --cat-text: #5b21b6;
+}
+
+.category-feeding {
+  --cat: #eab308;
+  --cat-surface: #fef9c3;
+  --cat-text: #854d0e;
+}
+
+.category-health {
+  --cat: #16a34a;
+  --cat-surface: #dcfce7;
+  --cat-text: #166534;
+}
+
+.category-appointment {
+  --cat: #2563eb;
+  --cat-surface: #dbeafe;
+  --cat-text: #1e40af;
+}
+
+.category-shopping {
+  --cat: #db2777;
+  --cat-surface: #fce7f3;
+  --cat-text: #9d174d;
+}
+
+.task-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+}
+
+.task-time {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cat-text);
+}
+
+.category-tag {
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: var(--cat-surface);
+  color: var(--cat-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.task {
+  padding-left: 0.75rem;
+  border-left: 4px solid var(--cat);
+}
+
+.task:first-child {
+  padding-top: 0.85rem;
+}
+
+.task-list .task {
+  margin-bottom: 0.5rem;
+  border-top: 0;
+  border-radius: 0.25rem;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+}
+
+.optional {
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+/* Schedule */
+
+.week-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.week-nav strong {
+  min-width: 9.5rem;
+  text-align: center;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 999px;
+  background: var(--cat);
+}
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.week-day {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 9rem;
+  padding: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--surface);
+}
+
+.week-day.is-selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.week-day-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.2rem 0.35rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.week-day-head strong {
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.is-today .week-day-head {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.is-today .week-day-head strong {
+  color: var(--accent-text);
+}
+
+.week-empty {
+  padding: 0 0.35rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.chip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem 0.4rem;
+  border-left: 3px solid var(--cat);
+  border-radius: 0.4rem;
+  background: var(--cat-surface);
+  color: var(--cat-text);
+  font-size: 0.78rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.chip-time {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip-title {
+  font-weight: 600;
+}
+
+.chip-who {
+  opacity: 0.8;
+}
+
+.chip-done {
+  opacity: 0.55;
+}
+
+.chip-done .chip-title {
+  text-decoration: line-through;
+}
+
+/* On a phone the week is a list of days, each with its tasks in a row. */
+@media (max-width: 40rem) {
+  .week-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .week-day {
+    min-height: 0;
+  }
+
+  .chip {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+}

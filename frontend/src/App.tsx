@@ -8,6 +8,7 @@ import LearnPage from "./pages/LearnPage";
 import LessonPage from "./pages/LessonPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import PricingPage from "./pages/PricingPage";
+import SchedulePage from "./pages/SchedulePage";
 import TasksPage from "./pages/TasksPage";
 import TodayPage from "./pages/TodayPage";
 import { SessionProvider } from "./session";
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/join/:token" element={<JoinPage />} />
             <Route path="/today" element={<TodayPage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
             <Route path="/family" element={<FamilyPage />} />
             <Route path="/tasks" element={<TasksPage />} />
             <Route path="/learn" element={<LearnPage />} />

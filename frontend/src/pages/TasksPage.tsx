@@ -1,9 +1,13 @@
 import { useEffect, useId, useState, type FormEvent } from "react";
+import { Link, useSearchParams } from "react-router";
 import {
+  addDays,
   api,
   ApiError,
   errorMessage,
   localDate,
+  TASK_CATEGORIES,
+  type TaskCategory,
   type FamilyMember,
   type LessonSummary,
   type Load,
@@ -68,7 +72,7 @@ function TasksView({ me }: { me: Me }) {
       <h1>Tasks</h1>
       <p className="muted">
         Share baby care across the family. When a task has a lesson, everyone sees whether the person doing it has
-        passed that lesson.
+        passed that lesson. See the week on the <Link to="/schedule">Schedule</Link>.
       </p>
 
       <section className="card">
@@ -122,13 +126,21 @@ function TaskForm({ me, members, lessons, onCreated }: FormProps) {
   const [customTitle, setCustomTitle] = useState("");
   const [customLesson, setCustomLesson] = useState("");
   const [assigneeId, setAssigneeId] = useState(members.find((m) => m.id !== me.member.id)?.id ?? me.member.id);
-  const [due, setDue] = useState<0 | 1>(0);
+  const [customCategory, setCustomCategory] = useState<TaskCategory>("care");
+  // The schedule links here with ?date=YYYY-MM-DD to plan a specific day.
+  const [params] = useSearchParams();
+  const today = localDate(0);
+  const linkedDate = params.get("date") ?? "";
+  const [dueDate, setDueDate] = useState(/^\d{4}-\d{2}-\d{2}$/.test(linkedDate) && linkedDate >= today ? linkedDate : today);
+  const [dueTime, setDueTime] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const suggested = lessons.find((l) => l.slug === choice);
   const title = suggested ? suggested.related_task : customTitle;
   const lessonSlug = suggested ? suggested.slug : customLesson;
+  // Tasks that come from a lesson are baby care; other tasks choose.
+  const category: TaskCategory = suggested ? "care" : customCategory;
   const lesson = lessons.find((l) => l.slug === lessonSlug);
   const assignee = members.find((m) => m.id === assigneeId);
 
@@ -138,9 +150,17 @@ function TaskForm({ me, members, lessons, onCreated }: FormProps) {
     setError(null);
     try {
       onCreated(
-        await api.createTask({ title, assignee_id: assigneeId, lesson_slug: lessonSlug, due_date: localDate(due) }),
+        await api.createTask({
+          title,
+          assignee_id: assigneeId,
+          lesson_slug: lessonSlug,
+          category,
+          due_date: dueDate,
+          due_time: dueTime,
+        }),
       );
       setCustomTitle("");
+      setDueTime("");
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -177,6 +197,21 @@ function TaskForm({ me, members, lessons, onCreated }: FormProps) {
             />
           </div>
           <div className="field">
+            <label htmlFor={`${id}-category`}>Category</label>
+            <select
+              id={`${id}-category`}
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value as TaskCategory)}
+              disabled={saving}
+            >
+              {TASK_CATEGORIES.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
             <label htmlFor={`${id}-lesson`}>Lesson that prepares for it</label>
             <select
               id={`${id}-lesson`}
@@ -211,12 +246,32 @@ function TaskForm({ me, members, lessons, onCreated }: FormProps) {
         </select>
       </div>
 
-      <div className="field">
-        <label htmlFor={`${id}-due`}>When</label>
-        <select id={`${id}-due`} value={due} onChange={(e) => setDue(e.target.value === "1" ? 1 : 0)} disabled={saving}>
-          <option value={0}>Today</option>
-          <option value={1}>Tomorrow</option>
-        </select>
+      <div className="field-row">
+        <div className="field">
+          <label htmlFor={`${id}-date`}>Day</label>
+          <input
+            id={`${id}-date`}
+            type="date"
+            value={dueDate}
+            min={today}
+            max={addDays(today, 365)}
+            onChange={(e) => setDueDate(e.target.value)}
+            required
+            disabled={saving}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor={`${id}-time`}>
+            Time <span className="muted optional">optional</span>
+          </label>
+          <input
+            id={`${id}-time`}
+            type="time"
+            value={dueTime}
+            onChange={(e) => setDueTime(e.target.value)}
+            disabled={saving}
+          />
+        </div>
       </div>
 
       {lesson && assignee && (

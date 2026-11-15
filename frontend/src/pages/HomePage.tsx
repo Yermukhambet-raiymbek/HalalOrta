@@ -38,9 +38,10 @@ export default function HomePage() {
     <>
       <section className="hero">
         <div>
-          <h1>Care for your baby as a family</h1>
+          <h1>Going back to work? Hand over baby care with confidence.</h1>
           <p className="hero-lead">
-            LittleVillage gets parents, grandparents and other helpers ready to care for the baby, together.
+            LittleVillage gets grandparents and other helpers ready with short lessons, and puts the baby's day on
+            one shared schedule, so nobody has to call you with questions.
           </p>
           <p className="muted">No sign-up and no passwords: this browser remembers you.</p>
         </div>
@@ -65,8 +66,11 @@ export default function HomePage() {
         </li>
         <li>
           <span className="step-number">3</span>
-          <strong>Share the care</strong>
-          <span>Each task shows whether the person doing it has passed the lesson for it.</span>
+          <strong>Share the day</strong>
+          <span>
+            One color-coded schedule for feeds, medicine, visits and shopping. Care tasks show whether the person
+            doing them has passed the lesson.
+          </span>
         </li>
       </ol>
 

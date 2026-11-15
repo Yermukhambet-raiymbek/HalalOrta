@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { api, errorMessage, formatDate, formatDay, localDate, type Task } from "../api";
+import { api, categoryLabel, errorMessage, formatDate, formatDay, formatTime, localDate, type Task } from "../api";
 
 type Props = {
   task: Task;
@@ -31,9 +31,13 @@ export default function TaskItem({ task, meId, onChanged }: Props) {
   }
 
   return (
-    <li className={done ? "task task-done" : "task"}>
+    <li className={`task category-${task.category}${done ? " task-done" : ""}`}>
       <div className="task-main">
-        <span className="task-title">{task.title}</span>
+        <span className="task-heading">
+          {task.due_time && <span className="task-time">{formatTime(task.due_time)}</span>}
+          <span className="task-title">{task.title}</span>
+          <span className="category-tag">{categoryLabel(task.category)}</span>
+        </span>
         <span className="muted">
           For {mine ? "you" : task.assignee.name} ·{" "}
           {done && task.completed_at ? (

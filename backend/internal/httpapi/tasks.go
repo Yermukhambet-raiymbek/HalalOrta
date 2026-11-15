@@ -3,6 +3,8 @@ package httpapi
 import (
 	"errors"
 	"net/http"
+	"regexp"
+	"slices"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -24,6 +26,9 @@ const (
 	maxDueAhead = 366 * 24 * time.Hour
 )
 
+// timePattern is a 24-hour time of day, HH:MM.
+var timePattern = regexp.MustCompile(`^([01][0-9]|2[0-3]):[0-5][0-9]$`)
+
 type taskHandlers struct {
 	store *store.Store
 }
@@ -33,7 +38,11 @@ type createTaskRequest struct {
 	AssigneeID string `json:"assignee_id"`
 	// LessonSlug is the lesson that prepares for the task. Optional.
 	LessonSlug string `json:"lesson_slug"`
-	DueDate    string `json:"due_date"`
+	// Category is one of store.TaskCategories. Optional: defaults to "care".
+	Category string `json:"category"`
+	DueDate  string `json:"due_date"`
+	// DueTime is the time of day as HH:MM. Optional: empty means any time.
+	DueTime string `json:"due_time"`
 }
 
 type updateTaskRequest struct {
@@ -73,14 +82,27 @@ func (h *taskHandlers) create(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, codeValidation, "Choose who the task is for.")
 		return
 	}
+	if req.Category == "" {
+		req.Category = store.TaskCategories[0]
+	}
+	if !slices.Contains(store.TaskCategories, req.Category) {
+		writeError(w, http.StatusBadRequest, codeValidation,
+			"Category must be one of: "+strings.Join(store.TaskCategories, ", ")+".")
+		return
+	}
 	now := time.Now()
 	if !validDate(req.DueDate, now.Add(-dateMargin), now.Add(maxDueAhead)) {
 		writeError(w, http.StatusBadRequest, codeValidation, "Due date must be today or a later day, as YYYY-MM-DD.")
 		return
 	}
+	if req.DueTime != "" && !timePattern.MatchString(req.DueTime) {
+		writeError(w, http.StatusBadRequest, codeValidation, "Time must be a time of day as HH:MM, for example 14:00.")
+		return
+	}
 
 	task, err := h.store.CreateTask(r.Context(), sess.FamilyID, sess.MemberID, store.NewTask{
-		Title: title, AssigneeID: req.AssigneeID, LessonSlug: req.LessonSlug, DueDate: req.DueDate,
+		Title: title, AssigneeID: req.AssigneeID, LessonSlug: req.LessonSlug,
+		Category: req.Category, DueDate: req.DueDate, DueTime: req.DueTime,
 	})
 	switch {
 	case errors.Is(err, store.ErrAssigneeNotInFamily):

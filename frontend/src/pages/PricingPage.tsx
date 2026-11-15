@@ -9,6 +9,7 @@ const FREE = [
   "Starter lessons with quizzes: safe sleep, bathing, crying",
   "Everyone's lesson progress in one table",
   "Shared care tasks that show whether the person doing them has passed the lesson",
+  "A color-coded family schedule: feeds, health, appointments, shopping",
   "A Today page with your tasks and your next lesson",
 ];
 
@@ -16,7 +17,7 @@ const PREMIUM = [
   "Everything in Free",
   "New lessons for each stage of the first year",
   "Repeating tasks for daily routines such as naps, feeds and baths",
-  "Reminders when a task is due or a lesson is waiting",
+  "Reminders by text or email when a task is due or a lesson is waiting",
 ];
 
 /** What is free today and what the paid family plan will add. Open to everyone. */

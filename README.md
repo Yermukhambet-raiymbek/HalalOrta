@@ -42,6 +42,10 @@ No sign-up, and one browser is enough.
   their quiz attempts on every request, so it is never stale, and it is
   shown before assigning and on the task itself. Only the assignee can mark
   a task done.
+- **Categories, times and a family schedule.** A task has a category (baby
+  care, feeding, health, appointment, shopping), a day and an optional time
+  of day. The Schedule page shows seven days at a time for the whole
+  family, colored by category, with who does what and when.
 - **Today.** The active member's tasks for their calendar day (overdue ones
   included) and the lesson to take next, preferring a lesson that one of
   their open tasks needs.
@@ -87,7 +91,7 @@ All responses are JSON. Errors look like
 | `GET /api/lessons/{slug}`   | session | One lesson with its questions, without the answer key |
 | `POST /api/lessons/{slug}/attempts` | session | `{answers: [..]}`: grade on the server, save the attempt, return the score, the key and explanations |
 | `GET /api/tasks`            | session | Every task of the family, each with `required_lesson` and `lesson_passed` for its assignee |
-| `POST /api/tasks`           | session | `{title, assignee_id, lesson_slug?, due_date}`: assign a task to a member of the same family |
+| `POST /api/tasks`           | session | `{title, assignee_id, lesson_slug?, category?, due_date, due_time?}`: assign a task to a member of the same family |
 | `PATCH /api/tasks/{id}`     | session | `{status: "done" \| "open"}`: only the assignee; 403 for other family members, 404 outside the family |
 | `GET /api/today?date=YYYY-MM-DD` | session | The active member's tasks for their calendar day and their next lesson |
 | `GET /api/plan/interest`    | session | Whether the member, and how many of the family, would use the paid plan |
@@ -227,7 +231,7 @@ backend/
 frontend/
   src/api.ts         typed API client
   src/session.tsx    active member state (GET /api/me)
-  src/pages/         start, invite, Today, family, tasks, lessons, lesson with quiz, pricing
+  src/pages/         start, invite, Today, schedule, family, tasks, lessons, lesson with quiz, pricing
   src/components/    header with member switcher, task item, form fields, footer, status messages
 Dockerfile           multi-stage build: frontend, Go binary, distroless runtime
 docker-compose.yml   app + PostgreSQL for local runs

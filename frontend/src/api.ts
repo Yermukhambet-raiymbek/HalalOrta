@@ -93,6 +93,20 @@ export type AttemptResult = {
 
 export type TaskStatus = "open" | "done";
 
+/** Task categories, each with its own color in the schedule. */
+export const TASK_CATEGORIES = [
+  { id: "care", label: "Baby care" },
+  { id: "feeding", label: "Feeding" },
+  { id: "health", label: "Health" },
+  { id: "appointment", label: "Appointment" },
+  { id: "shopping", label: "Shopping" },
+] as const;
+export type TaskCategory = (typeof TASK_CATEGORIES)[number]["id"];
+
+export function categoryLabel(id: TaskCategory): string {
+  return TASK_CATEGORIES.find((c) => c.id === id)?.label ?? id;
+}
+
 /**
  * A care task. required_lesson is the lesson that prepares for it and
  * lesson_passed tells whether the assignee has passed that lesson; both are
@@ -102,8 +116,11 @@ export type Task = {
   id: string;
   title: string;
   status: TaskStatus;
+  category: TaskCategory;
   /** A calendar day, YYYY-MM-DD. */
   due_date: string;
+  /** Time of day as HH:MM, or null for any time that day. */
+  due_time: string | null;
   assignee: { id: string; name: string };
   created_by: { id: string; name: string };
   required_lesson: LessonRef | null;
@@ -197,7 +214,14 @@ export const api = {
   submitAttempt: (slug: string, answers: number[]) =>
     request<AttemptResult>("POST", `/api/lessons/${encodeURIComponent(slug)}/attempts`, { answers }),
   tasks: () => request<{ tasks: Task[] }>("GET", "/api/tasks"),
-  createTask: (input: { title: string; assignee_id: string; lesson_slug: string; due_date: string }) =>
+  createTask: (input: {
+    title: string;
+    assignee_id: string;
+    lesson_slug: string;
+    category: TaskCategory;
+    due_date: string;
+    due_time: string;
+  }) =>
     request<Task>("POST", "/api/tasks", input),
   setTaskStatus: (taskId: string, status: TaskStatus) =>
     request<Task>("PATCH", `/api/tasks/${encodeURIComponent(taskId)}`, { status }),
@@ -229,6 +253,20 @@ export function localDate(offsetDays = 0): string {
   d.setDate(d.getDate() + offsetDays);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** The calendar day `days` after the YYYY-MM-DD day `day`. */
+export function addDays(day: string, days: number): string {
+  const [y, m, d] = day.split("-").map(Number);
+  const date = new Date(y, m - 1, d + days);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/** "2:00 PM" for an HH:MM time of day. */
+export function formatTime(time: string): string {
+  const [h, m] = time.split(":").map(Number);
+  return new Date(2000, 0, 1, h, m).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }
 
 /** "Today", "Tomorrow" or "Nov 15" for a YYYY-MM-DD calendar day. */

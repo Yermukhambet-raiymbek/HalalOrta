@@ -38,6 +38,7 @@ export default function Header() {
           {session.status === "ready" && (
             <>
               <NavLink to="/today">Today</NavLink>
+              <NavLink to="/schedule">Schedule</NavLink>
               <NavLink to="/family">Family</NavLink>
               <NavLink to="/tasks">Tasks</NavLink>
               <NavLink to="/learn">Learn</NavLink>

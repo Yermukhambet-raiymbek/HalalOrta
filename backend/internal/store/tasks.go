@@ -11,6 +11,10 @@ import (
 // MaxTasks is the most tasks one family can have.
 const MaxTasks = 200
 
+// TaskCategories are the allowed values of tasks.category. The first one
+// is the default.
+var TaskCategories = []string{"care", "feeding", "health", "appointment", "shopping"}
+
 // Task statuses.
 const (
 	TaskOpen = "open"
@@ -39,10 +43,13 @@ type TaskMember struct {
 // are nil for a task without a lesson. LessonPassed is computed from quiz
 // attempts on every read, so it changes as soon as the assignee passes.
 type Task struct {
-	ID             string     `json:"id"`
-	Title          string     `json:"title"`
-	Status         string     `json:"status"`
-	DueDate        string     `json:"due_date"` // YYYY-MM-DD
+	ID       string `json:"id"`
+	Title    string `json:"title"`
+	Status   string `json:"status"`
+	Category string `json:"category"`
+	DueDate  string `json:"due_date"` // YYYY-MM-DD
+	// DueTime is the time of day as HH:MM, or nil for "any time that day".
+	DueTime        *string    `json:"due_time"`
 	Assignee       TaskMember `json:"assignee"`
 	CreatedBy      TaskMember `json:"created_by"`
 	RequiredLesson *LessonRef `json:"required_lesson"`
@@ -56,7 +63,9 @@ type NewTask struct {
 	Title      string
 	AssigneeID string
 	LessonSlug string
+	Category   string
 	DueDate    string // YYYY-MM-DD
+	DueTime    string // HH:MM, or "" for any time
 }
 
 // NextLesson is the lesson a member should take next.
@@ -71,7 +80,8 @@ type NextLesson struct {
 }
 
 const taskSelect = `
-	SELECT t.id, t.title, t.status, to_char(t.due_date, 'YYYY-MM-DD'),
+	SELECT t.id, t.title, t.status, t.category, to_char(t.due_date, 'YYYY-MM-DD'),
+	       to_char(t.due_time, 'HH24:MI'),
 	       a.id, a.name, c.id, c.name, l.slug, l.title,
 	       CASE WHEN l.id IS NULL THEN NULL ELSE EXISTS (
 	           SELECT 1 FROM quiz_attempts q
@@ -86,7 +96,7 @@ const taskSelect = `
 func scanTask(row pgx.CollectableRow) (Task, error) {
 	var t Task
 	var lessonSlug, lessonTitle *string
-	err := row.Scan(&t.ID, &t.Title, &t.Status, &t.DueDate,
+	err := row.Scan(&t.ID, &t.Title, &t.Status, &t.Category, &t.DueDate, &t.DueTime,
 		&t.Assignee.ID, &t.Assignee.Name, &t.CreatedBy.ID, &t.CreatedBy.Name,
 		&lessonSlug, &lessonTitle, &t.LessonPassed, &t.CompletedAt, &t.CreatedAt)
 	if lessonSlug != nil && lessonTitle != nil {
@@ -95,13 +105,14 @@ func scanTask(row pgx.CollectableRow) (Task, error) {
 	return t, err
 }
 
-// ListTasks returns every task of the family: open ones first by due date,
-// then done ones, most recently completed first. Callers must pass the
+// ListTasks returns every task of the family: open ones first by due date
+// and time, then done ones, most recently completed first. Callers must pass the
 // family ID from the session.
 func (s *Store) ListTasks(ctx context.Context, familyID string) ([]Task, error) {
 	rows, err := s.pool.Query(ctx, taskSelect+`
 		WHERE t.family_id = $1
 		ORDER BY (t.status = 'done'), CASE WHEN t.status = 'open' THEN t.due_date END,
+		         CASE WHEN t.status = 'open' THEN t.due_time END NULLS LAST,
 		         t.completed_at DESC NULLS LAST, t.created_at`, familyID)
 	if err != nil {
 		return nil, err
@@ -111,12 +122,13 @@ func (s *Store) ListTasks(ctx context.Context, familyID string) ([]Task, error) 
 
 // TodayTasks returns the member's tasks for the calendar day date
 // (YYYY-MM-DD): open tasks due that day or earlier, and tasks due that day
-// that are already done.
+// that are already done. Earlier days come first, then the time of day;
+// tasks without a time come last within their day.
 func (s *Store) TodayTasks(ctx context.Context, memberID, date string) ([]Task, error) {
 	rows, err := s.pool.Query(ctx, taskSelect+`
 		WHERE t.assignee_id = $1
 		  AND ((t.status = 'open' AND t.due_date <= $2::date) OR t.due_date = $2::date)
-		ORDER BY (t.status = 'done'), t.due_date, t.created_at`, memberID, date)
+		ORDER BY t.due_date, t.due_time NULLS LAST, t.created_at`, memberID, date)
 	if err != nil {
 		return nil, err
 	}
@@ -162,6 +174,10 @@ func (s *Store) CreateTask(ctx context.Context, familyID, createdBy string, in N
 		if count >= MaxTasks {
 			return ErrTooManyTasks
 		}
+		var dueTime *string
+		if in.DueTime != "" {
+			dueTime = &in.DueTime
+		}
 		var lessonID *string
 		if in.LessonSlug != "" {
 			var id string
@@ -175,10 +191,10 @@ func (s *Store) CreateTask(ctx context.Context, familyID, createdBy string, in N
 			lessonID = &id
 		}
 		return tx.QueryRow(ctx, `
-			INSERT INTO tasks (family_id, title, lesson_id, assignee_id, created_by, due_date)
-			VALUES ($1, $2, $3, $4, $5, $6::date)
+			INSERT INTO tasks (family_id, title, lesson_id, assignee_id, created_by, category, due_date, due_time)
+			VALUES ($1, $2, $3, $4, $5, $6, $7::date, $8::time)
 			RETURNING id`,
-			familyID, in.Title, lessonID, in.AssigneeID, createdBy, in.DueDate,
+			familyID, in.Title, lessonID, in.AssigneeID, createdBy, in.Category, in.DueDate, dueTime,
 		).Scan(&taskID)
 	})
 	if err != nil {

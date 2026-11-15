@@ -212,6 +212,75 @@ func TestTaskValidation(t *testing.T) {
 	}
 }
 
+func TestTaskCategoryAndTime(t *testing.T) {
+	t.Parallel()
+	srv, _ := newServer(t)
+	b := newBrowser(t, srv)
+	me := b.createFamily("Planners", "Ann", "Mom")
+	id := me.Member.ID
+
+	create := func(body map[string]string) (int, store.Task, apiError) {
+		var raw struct {
+			store.Task
+			apiError
+		}
+		code := b.call(http.MethodPost, "/api/tasks", body, &raw)
+		return code, raw.Task, raw.apiError
+	}
+
+	// Category and time are optional: the default is "care" at any time.
+	plain := b.createTask("Tummy time", id, "", day(0))
+	if plain.Category != "care" || plain.DueTime != nil {
+		t.Fatalf("defaults: %+v", plain)
+	}
+	code, syrup, _ := create(map[string]string{
+		"title": "Give syrup", "assignee_id": id, "category": "health", "due_date": day(0), "due_time": "14:00",
+	})
+	if code != http.StatusCreated || syrup.Category != "health" || syrup.DueTime == nil || *syrup.DueTime != "14:00" {
+		t.Fatalf("health task at 14:00: status %d %+v", code, syrup)
+	}
+	_, fed, _ := create(map[string]string{
+		"title": "Feed", "assignee_id": id, "category": "feeding", "due_date": day(0), "due_time": "09:00",
+	})
+	_, visit, _ := create(map[string]string{
+		"title": "Speech therapist", "assignee_id": id, "category": "appointment", "due_date": day(0), "due_time": "11:00",
+	})
+	_, diapers, _ := create(map[string]string{
+		"title": "Buy diapers", "assignee_id": id, "category": "shopping", "due_date": day(0),
+	})
+
+	// Today is ordered by time of day; tasks without a time come last.
+	want := []string{fed.ID, visit.ID, syrup.ID, plain.ID, diapers.ID}
+	got := b.today(day(0)).Tasks
+	if len(got) != len(want) {
+		t.Fatalf("today has %d tasks, want %d: %+v", len(got), len(want), got)
+	}
+	for i, task := range got {
+		if task.ID != want[i] {
+			t.Fatalf("today order: position %d is %q (%v), want id %s", i, task.Title, task.DueTime, want[i])
+		}
+	}
+	// A finished task keeps its place in the day.
+	b.setStatus(fed.ID, "done")
+	if got := b.today(day(0)).Tasks; got[0].ID != fed.ID || got[0].Status != "done" {
+		t.Fatalf("a done task must keep its slot: %+v", got[0])
+	}
+
+	for name, body := range map[string]map[string]string{
+		"unknown category":    {"title": "T", "assignee_id": id, "category": "party", "due_date": day(0)},
+		"time not HH:MM":      {"title": "T", "assignee_id": id, "due_date": day(0), "due_time": "2pm"},
+		"hour out of range":   {"title": "T", "assignee_id": id, "due_date": day(0), "due_time": "24:00"},
+		"minute out of range": {"title": "T", "assignee_id": id, "due_date": day(0), "due_time": "09:60"},
+	} {
+		if code, _, e := create(body); code != http.StatusBadRequest || e.Error.Code != "validation_error" {
+			t.Errorf("%s: status %d code %q, want 400 validation_error", name, code, e.Error.Code)
+		}
+	}
+	if got := b.tasks(); len(got) != 5 {
+		t.Fatalf("invalid tasks were saved: %d tasks", len(got))
+	}
+}
+
 func TestTodayShowsMyTasksAndNextLesson(t *testing.T) {
 	t.Parallel()
 	srv, _ := newServer(t)

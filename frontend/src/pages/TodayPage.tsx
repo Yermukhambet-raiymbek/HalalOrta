@@ -71,7 +71,7 @@ function TodayView({ me }: { me: Me }) {
           </ul>
         )}
         <p>
-          <Link to="/tasks">All family tasks</Link>
+          <Link to="/schedule">Family schedule</Link> · <Link to="/tasks">All family tasks</Link>
         </p>
       </section>
 
