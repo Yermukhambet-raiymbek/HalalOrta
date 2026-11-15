@@ -1,0 +1,2 @@
+# Always LF: gofmt and the Linux build containers expect it.
+* text=auto eol=lf

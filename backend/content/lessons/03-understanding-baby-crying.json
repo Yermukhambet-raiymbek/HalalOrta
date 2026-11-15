@@ -1,0 +1,68 @@
+{
+  "slug": "understanding-baby-crying",
+  "title": "Understanding Baby Crying",
+  "objectives": [
+    "Understand why babies cry",
+    "Respond to crying step by step",
+    "Know what to do when you feel overwhelmed"
+  ],
+  "steps": [
+    "Crying is how baby calls for help when hungry or uncomfortable. Newborns routinely cry 1 to 4 hours a day.",
+    "Check the basics, such as hungry, cold, a wet diaper or sleepy, and meet the most pressing need first.",
+    "Respond promptly during the first few months. You cannot spoil a young baby with attention.",
+    "Try rocking baby in a chair or in your arms, or walking with baby in your arms or a stroller.",
+    "Try safe swaddling, gently stroking baby's head or patting their back, and singing, talking or soft music.",
+    "If you start to feel you can't handle the situation, set baby down in a safe location and get help from a family member or friend.",
+    "Never shake a baby. Shaking an infant hard can cause blindness, brain damage or even death."
+  ],
+  "source_title": "AAP HealthyChildren.org: Responding To Your Baby's Cries",
+  "source_url": "https://www.healthychildren.org/English/ages-stages/baby/crying-colic/Pages/Responding-to-Your-Babys-Cries.aspx",
+  "related_task": "Soothe baby during the evening fussy time",
+  "disclaimer": "Based on AAP guidance (HealthyChildren.org). Not medical advice.",
+  "questions": [
+    {
+      "prompt": "A relative says picking up a one-month-old every time they cry will spoil them. What does the guidance say?",
+      "options": [
+        "Let baby cry so they learn to wait",
+        "Respond only after ten minutes of crying",
+        "Respond promptly; you cannot spoil a young baby with attention",
+        "Respond only at night"
+      ],
+      "correct_index": 2,
+      "explanation": "The best way to handle crying in the first few months is to respond promptly. You cannot spoil a young baby with attention."
+    },
+    {
+      "prompt": "Baby starts crying. What is a good first step?",
+      "options": [
+        "Check the basics, such as hungry, cold, wet or sleepy, and meet the most pressing need first",
+        "Turn up music to cover the sound",
+        "Wait until the crying stops by itself",
+        "Give baby a bath right away"
+      ],
+      "correct_index": 0,
+      "explanation": "Crying is how baby calls for help when hungry or uncomfortable, so start with the most pressing need."
+    },
+    {
+      "prompt": "Which of these is a soothing technique from the lesson?",
+      "options": [
+        "Bouncing baby quickly up and down",
+        "Leaving baby alone in a bright, noisy room",
+        "Feeding baby again right after a full feeding",
+        "Rocking baby in your arms, or safe swaddling"
+      ],
+      "correct_index": 3,
+      "explanation": "Rocking, walking, safe swaddling, gentle stroking or patting, and singing or soft music are the techniques listed."
+    },
+    {
+      "prompt": "Baby has cried for a long time, nothing helps, and you feel you can't handle it. What should you do?",
+      "options": [
+        "Shake baby gently to get their attention",
+        "Set baby down in a safe location and get help from a family member or friend",
+        "Keep holding baby no matter how upset you feel",
+        "Leave the home for a while without telling anyone"
+      ],
+      "correct_index": 1,
+      "explanation": "Set baby down in a safe location and get help. Never shake a baby: shaking an infant hard can cause blindness, brain damage or even death."
+    }
+  ]
+}

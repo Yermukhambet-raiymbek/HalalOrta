@@ -14,6 +14,7 @@ const (
 	codeForbidden        = "forbidden"
 	codeNotFound         = "not_found"
 	codeInviteNotFound   = "invite_not_found"
+	codeLessonNotFound   = "lesson_not_found"
 	codeFamilyFull       = "family_full"
 	codeMethodNotAllowed = "method_not_allowed"
 	codeInternal         = "internal"

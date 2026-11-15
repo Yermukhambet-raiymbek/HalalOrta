@@ -245,3 +245,239 @@ select:disabled {
   min-width: 0;
   font-size: 0.9rem;
 }
+
+/* Navigation */
+
+.site-nav {
+  display: flex;
+  gap: 0.25rem;
+  margin-right: auto;
+}
+
+.site-nav a {
+  padding: 0.3rem 0.65rem;
+  border-radius: 0.5rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.site-nav a.active {
+  background: var(--hint-surface);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Results */
+
+.result-pass {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.result-partial {
+  color: #b45309;
+  font-weight: 600;
+}
+
+.result-fail {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* Progress table */
+
+.table-scroll {
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+}
+
+.progress-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.progress-table th,
+.progress-table td {
+  padding: 0.5rem 0.4rem;
+  border-top: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.progress-table thead th {
+  border-top: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  min-width: 5.5rem;
+}
+
+.progress-table th[scope="row"] {
+  overflow-wrap: anywhere;
+  min-width: 4.5rem;
+}
+
+.cell-date {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* On a phone the table is stacked: one block per member, one line per lesson. */
+@media (max-width: 34rem) {
+  .progress-table thead {
+    display: none;
+  }
+
+  .progress-table tr {
+    display: block;
+    padding: 0.6rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .progress-table tr:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .progress-table th[scope="row"] {
+    display: block;
+    padding: 0 0 0.25rem;
+    border: 0;
+    font-size: 1rem;
+  }
+
+  .progress-table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.15rem 0;
+    border: 0;
+    text-align: right;
+  }
+
+  .progress-table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    text-align: left;
+  }
+
+  .cell-date {
+    display: inline;
+    margin-left: 0.4rem;
+  }
+}
+
+/* Lessons */
+
+.lesson-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lesson-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.lesson-card:hover,
+.lesson-card:focus-visible {
+  border-color: var(--accent);
+}
+
+.lesson-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.status-pill {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.status-pill.result-pass {
+  color: #15803d;
+}
+
+.status-pill.result-partial {
+  color: #b45309;
+}
+
+.plain-list {
+  margin: 0 0 0.75rem;
+  padding-left: 1.3rem;
+}
+
+.plain-list li {
+  margin-bottom: 0.4rem;
+}
+
+/* Quiz */
+
+.question {
+  margin: 0 0 1.25rem;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.question legend,
+.question-prompt {
+  padding: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.option:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--hint-surface);
+}
+
+.option input {
+  width: auto;
+  margin-top: 0.3rem;
+}
+
+.result-banner {
+  font-size: 1.1rem;
+}
+
+.review-list li {
+  margin-bottom: 1rem;
+}
+
+.review-list p {
+  margin-bottom: 0.25rem;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.button-link {
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: 0.5rem;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}

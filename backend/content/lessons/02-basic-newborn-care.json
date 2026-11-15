@@ -1,0 +1,66 @@
+{
+  "slug": "basic-newborn-care",
+  "title": "Basic Newborn Care: Bath Time",
+  "objectives": [
+    "Know when sponge baths are needed instead of tub baths",
+    "Prepare a bath that is safe for a newborn",
+    "Hold and watch baby safely during the bath"
+  ],
+  "steps": [
+    "Until the umbilical cord stump falls off, give sponge baths only. This usually happens by about one or two weeks of age.",
+    "Baby does not need a bath every day. Three baths a week during the first year may be enough.",
+    "For a tub bath, fill the basin with 2 inches of water that feels warm, not hot, on the inside of your wrist or elbow.",
+    "Use one hand to support baby's head and the other to guide baby into the water, feet first.",
+    "Never leave a baby alone in the bath, even for an instant."
+  ],
+  "source_title": "AAP HealthyChildren.org: Bathing Your Baby",
+  "source_url": "https://www.healthychildren.org/English/ages-stages/baby/bathing-skin-care/Pages/Bathing-Your-Newborn.aspx",
+  "related_task": "Give baby a bath",
+  "disclaimer": "Based on AAP guidance (HealthyChildren.org). Not medical advice.",
+  "questions": [
+    {
+      "prompt": "Baby is five days old and the umbilical cord stump is still attached. What kind of bath should you give?",
+      "options": [
+        "A sponge bath only",
+        "A tub bath with 2 inches of water",
+        "A quick shower held in your arms",
+        "A long soak in the big bathtub"
+      ],
+      "correct_index": 0,
+      "explanation": "Newborns get sponge baths only until the stump of the umbilical cord falls off."
+    },
+    {
+      "prompt": "How often does a baby need a bath during the first year?",
+      "options": [
+        "Twice a day",
+        "Every day without exception",
+        "About three times a week may be enough",
+        "Once a month"
+      ],
+      "correct_index": 2,
+      "explanation": "Babies do not need a bath every day. Three baths per week during the first year may be enough."
+    },
+    {
+      "prompt": "How do you check the water before a tub bath?",
+      "options": [
+        "It should feel hot to your fingertips",
+        "It should steam slightly",
+        "Any temperature is fine if the bath is short",
+        "It should feel warm, not hot, on the inside of your wrist or elbow"
+      ],
+      "correct_index": 3,
+      "explanation": "Fill the basin with 2 inches of water that feels warm, not hot, to the inside of your wrist or elbow."
+    },
+    {
+      "prompt": "Baby is in the bath and you realize the towel is in another room. What do you do?",
+      "options": [
+        "Step out quickly; a few seconds is fine",
+        "Take baby with you; never leave a baby alone in the bath",
+        "Ask baby's older sibling to watch for a minute",
+        "Leave baby in the water and call for someone from the door"
+      ],
+      "correct_index": 1,
+      "explanation": "Never leave a baby alone in the bath, even for an instant."
+    }
+  ]
+}

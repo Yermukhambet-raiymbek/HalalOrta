@@ -26,6 +26,7 @@ type Options struct {
 // NewRouter builds the HTTP handler.
 func NewRouter(st *store.Store, opts Options) http.Handler {
 	fh := &familyHandlers{store: st, cookieSecure: opts.CookieSecure}
+	lh := &lessonHandlers{store: st}
 
 	r := chi.NewRouter()
 	r.Use(logRequests)
@@ -39,13 +40,18 @@ func NewRouter(st *store.Store, opts Options) http.Handler {
 		r.Post("/families", fh.create)
 		r.Post("/families/join", fh.join)
 		r.Get("/invites/{token}", fh.invite)
+		// Answers 200 with {"member": null} when nobody is active, so a
+		// first-time visitor gets no error in the browser console.
+		r.Get("/me", fh.me)
 
 		// Private endpoints: all go through requireMember.
 		r.Group(func(r chi.Router) {
 			r.Use(requireMember(st))
-			r.Get("/me", fh.me)
 			r.Get("/family", fh.family)
 			r.Post("/session/switch", fh.switchMember)
+			r.Get("/lessons", lh.list)
+			r.Get("/lessons/{slug}", lh.get)
+			r.Post("/lessons/{slug}/attempts", lh.attempt)
 		})
 
 		// Unknown API paths get JSON errors, never the SPA's index.html.
