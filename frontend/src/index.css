@@ -1142,6 +1142,31 @@ select:disabled {
     width: 6rem;
   }
 
+  /* Lesson steps become a row to swipe through, one card at a time. */
+  .step-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 84%;
+    margin-inline: -1.1rem;
+    padding: 0 1.1rem 0.6rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 1.1rem;
+    scrollbar-width: none;
+  }
+
+  .step-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .step-card {
+    scroll-snap-align: start;
+  }
+
+  .swipe-hint {
+    display: block;
+  }
+
   /* Only a member has several links; a visitor keeps Pricing in the header. */
   .site-nav:has(a:nth-child(2)) {
     position: fixed;
@@ -1169,6 +1194,113 @@ select:disabled {
   body:has(.site-nav a:nth-child(2)) {
     padding-bottom: 4.25rem;
   }
+}
+
+/* Quiz: one question at a time. */
+
+.quiz-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.quiz-progress progress {
+  flex: 1;
+  height: 0.6rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--wash);
+  overflow: hidden;
+  appearance: none;
+}
+
+.quiz-progress progress::-webkit-progress-bar {
+  background: var(--wash);
+}
+
+.quiz-progress progress::-webkit-progress-value {
+  border-radius: 999px;
+  background: var(--yolk);
+  transition: width 0.35s var(--ease);
+}
+
+.quiz-progress progress::-moz-progress-bar {
+  border-radius: 999px;
+  background: var(--yolk);
+}
+
+.question-step legend {
+  margin-bottom: 0.8rem;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.quiz-nav {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.quiz-nav button.primary {
+  flex: 1;
+  width: auto;
+}
+
+.quiz-nav button:not(.primary):last-child {
+  margin-left: auto;
+}
+
+.result-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.confetti {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.confetti i {
+  position: absolute;
+  top: -1rem;
+  left: var(--x);
+  width: 0.55rem;
+  height: 0.95rem;
+  border-radius: 2px;
+  background: var(--c);
+  opacity: 0;
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(22rem) rotate(var(--r));
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+
+.swipe-hint {
+  display: none;
+  font-size: 0.9rem;
 }
 
 /* Add task: a floating button and a panel that slides in. */
@@ -1340,6 +1472,25 @@ select:disabled {
 
   .hero img {
     animation: float 3.2s ease-in-out infinite alternate;
+  }
+
+  .question-step {
+    animation: slide-in 0.35s var(--ease);
+  }
+
+  .confetti i {
+    animation: confetti-fall 1.5s var(--d) cubic-bezier(0.2, 0.6, 0.4, 1) both;
+  }
+
+  .option {
+    transition:
+      border-color 0.15s,
+      background-color 0.15s,
+      transform 0.15s var(--ease);
+  }
+
+  .option:active {
+    transform: scale(0.985);
   }
 
   .drawer[open] {

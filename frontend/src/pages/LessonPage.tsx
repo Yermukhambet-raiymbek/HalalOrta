@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import { Link, useParams } from "react-router";
 import { api, ApiError, errorMessage, illustrationUrl, type AttemptResult, type Lesson, type Load } from "../api";
 import RequireMember from "../components/RequireMember";
@@ -67,6 +67,7 @@ function LessonView({ slug }: { slug: string }) {
 
       <section className="card">
         <h2>Steps</h2>
+        <p className="swipe-hint muted">Swipe sideways to go through the steps.</p>
         <ol className="step-grid">
           {l.steps.map((s, i) => (
             <li key={s} className="step-card">
@@ -100,6 +101,8 @@ function Quiz({ lesson }: { lesson: Lesson }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AttemptResult | null>(null);
+  // One question is shown at a time.
+  const [current, setCurrent] = useState(0);
   const topRef = useRef<HTMLElement>(null);
 
   const unanswered = answers.filter((a) => a === null).length;
@@ -123,13 +126,15 @@ function Quiz({ lesson }: { lesson: Lesson }) {
   function tryAgain() {
     setAnswers(lesson.questions.map(() => null));
     setResult(null);
+    setCurrent(0);
     setError(null);
     topRef.current?.scrollIntoView({ block: "start" });
   }
 
   if (result) {
     return (
-      <section className="card" ref={topRef}>
+      <section className="card result-card" ref={topRef}>
+        {result.passed && <Confetti />}
         <h2>Your result</h2>
         <p className={`result-banner ${result.passed ? "result-pass" : "result-partial"}`} role="status">
           {result.passed
@@ -163,42 +168,85 @@ function Quiz({ lesson }: { lesson: Lesson }) {
     );
   }
 
+  const total = lesson.questions.length;
+  const question = lesson.questions[current];
+  const isLast = current === total - 1;
+
+  function choose(option: number) {
+    setAnswers((prev) => prev.map((a, i) => (i === current ? option : a)));
+    // Move on by itself after a short pause, so the choice is seen first.
+    if (!isLast) window.setTimeout(() => setCurrent((c) => (c === current ? c + 1 : c)), 320);
+  }
+
   return (
     <section className="card" ref={topRef}>
       <h2>Quiz</h2>
       <form onSubmit={(e) => void onSubmit(e)}>
-        {lesson.questions.map((q, qi) => (
-          <fieldset key={q.prompt} className="question" disabled={submitting}>
-            <legend>
-              {qi + 1}. {q.prompt}
-            </legend>
-            {q.options.map((option, oi) => (
-              <label key={option} className="option">
-                <input
-                  type="radio"
-                  name={`question-${qi}`}
-                  checked={answers[qi] === oi}
-                  onChange={() => setAnswers((prev) => prev.map((a, i) => (i === qi ? oi : a)))}
-                />
-                <span>{option}</span>
-              </label>
-            ))}
-          </fieldset>
-        ))}
+        <div className="quiz-progress">
+          <span>
+            Question {current + 1} of {total}
+          </span>
+          <progress value={total - unanswered} max={total} aria-label="Questions answered" />
+        </div>
+        {/* A new key per question replays the slide-in. */}
+        <fieldset key={current} className="question question-step" disabled={submitting}>
+          <legend>{question.prompt}</legend>
+          {question.options.map((option, oi) => (
+            <label key={option} className="option">
+              <input
+                type="radio"
+                name={`question-${current}`}
+                checked={answers[current] === oi}
+                onChange={() => choose(oi)}
+              />
+              <span>{option}</span>
+            </label>
+          ))}
+        </fieldset>
         {error && (
           <p className="form-error" role="alert">
             {error}
           </p>
         )}
-        {unanswered > 0 && (
-          <p className="muted">
-            {unanswered === 1 ? "1 question" : `${unanswered} questions`} left to answer.
-          </p>
-        )}
-        <button type="submit" className="primary" disabled={submitting || unanswered > 0}>
-          {submitting ? "Checking…" : "Submit answers"}
-        </button>
+        <div className="quiz-nav">
+          {current > 0 && (
+            <button type="button" onClick={() => setCurrent(current - 1)} disabled={submitting}>
+              Back
+            </button>
+          )}
+          {isLast ? (
+            <button type="submit" className="primary" disabled={submitting || unanswered > 0}>
+              {submitting ? "Checking…" : "Submit answers"}
+            </button>
+          ) : (
+            <button type="button" onClick={() => setCurrent(current + 1)} disabled={answers[current] === null}>
+              Next
+            </button>
+          )}
+        </div>
       </form>
     </section>
+  );
+}
+
+/** A short burst of paper pieces for a passed quiz. Decorative only. */
+function Confetti() {
+  const colors = ["#ffc533", "#7c3aed", "#16a34a", "#2563eb", "#db2777"];
+  return (
+    <div className="confetti" aria-hidden="true">
+      {Array.from({ length: 18 }, (_, i) => (
+        <i
+          key={i}
+          style={
+            {
+              "--x": `${(i * 53) % 100}%`,
+              "--c": colors[i % colors.length],
+              "--d": `${(i % 6) * 0.07}s`,
+              "--r": `${(i % 2 ? 1 : -1) * (240 + i * 20)}deg`,
+            } as CSSProperties
+          }
+        />
+      ))}
+    </div>
   );
 }
