@@ -1,5 +1,9 @@
 # Local run: the app (API + built frontend) together with PostgreSQL.
 # The credentials below are for this local database only.
+# A fixed project name gives a fixed network name (littlevillage_default),
+# which the Go test container joins to reach the database.
+name: littlevillage
+
 services:
   db:
     image: postgres:18-alpine

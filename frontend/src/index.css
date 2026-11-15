@@ -1,64 +1,247 @@
 :root {
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --surface: #ffffff;
+  --background: #f8f7f4;
+  --accent: #2563eb;
+  --accent-text: #ffffff;
+  --danger: #b91c1c;
+  --danger-surface: #fef2f2;
+  --hint-surface: #eff6ff;
+
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
-  color: #1f2937;
-  background: #f8f7f4;
+  color: var(--text);
+  background: var(--background);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
 }
 
-.page {
-  max-width: 32rem;
-  margin: 0 auto;
-  padding: 3rem 1rem;
-}
-
 h1 {
-  margin: 0;
-}
-
-.tagline {
-  margin-top: 0.25rem;
-  color: #4b5563;
-}
-
-.card {
-  margin-top: 2rem;
-  padding: 1.25rem;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-}
-
-.card h2 {
   margin: 0 0 0.5rem;
+  font-size: 1.6rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+h2 {
+  margin: 0 0 0.75rem;
   font-size: 1.1rem;
 }
 
-.status {
+p {
+  margin: 0 0 0.75rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+/* Header */
+
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header-inner {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  font-size: 0.95rem;
+}
+
+.switcher select {
+  width: auto;
+  max-width: 14rem;
+}
+
+.header-note {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 0 1rem 0.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.header-error {
+  color: var(--danger);
+}
+
+/* Page layout */
+
+.page {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.intro {
+  margin-bottom: 1.5rem;
+}
+
+.card {
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.hint {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--hint-surface);
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+}
+
+/* Forms */
+
+.field {
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.25rem;
   font-weight: 600;
 }
 
-.status-ok {
-  color: #15803d;
+.switcher,
+.switcher span {
+  font-weight: 400;
+  margin: 0;
 }
 
-.status-bad {
-  color: #b91c1c;
+input,
+select,
+button {
+  font: inherit;
+  font-size: 1rem; /* 16px keeps iOS from zooming into inputs */
+}
+
+input,
+select {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: var(--surface);
+  color: var(--text);
 }
 
 button {
-  font: inherit;
-  padding: 0.4rem 0.9rem;
+  padding: 0.55rem 1rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
-  background: #ffffff;
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
 }
 
-button:disabled {
+button.primary {
+  width: 100%;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+button:disabled,
+input:disabled,
+select:disabled {
   cursor: default;
   opacity: 0.6;
+}
+
+.form-error {
+  color: var(--danger);
+}
+
+.error-box {
+  padding: 1rem;
+  border: 1px solid #fecaca;
+  border-radius: 0.75rem;
+  background: var(--danger-surface);
+  color: var(--danger);
+}
+
+/* Family page */
+
+.member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.member-list li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.member-list li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.member-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.badge {
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--hint-surface);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.invite-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.invite-row input {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
 }

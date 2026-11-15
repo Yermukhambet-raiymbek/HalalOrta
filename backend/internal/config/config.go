@@ -16,9 +16,14 @@ type Config struct {
 	Port string
 	// StaticDir is the folder with the built frontend (index.html + assets).
 	StaticDir string
+	// CookieSecure forces the Secure flag on the session cookie. Set it in
+	// production. Without it the flag is still set for HTTPS requests
+	// (directly or via X-Forwarded-Proto).
+	CookieSecure bool
 }
 
-// Load reads DATABASE_URL, PORT (default 8080) and STATIC_DIR (default "static").
+// Load reads DATABASE_URL, PORT (default 8080), STATIC_DIR (default "static")
+// and COOKIE_SECURE (default false).
 func Load() (Config, error) {
 	cfg := Config{
 		DatabaseURL: os.Getenv("DATABASE_URL"),
@@ -31,6 +36,11 @@ func Load() (Config, error) {
 	if n, err := strconv.Atoi(cfg.Port); err != nil || n < 1 || n > 65535 {
 		return Config{}, fmt.Errorf("PORT must be a number between 1 and 65535, got %q", cfg.Port)
 	}
+	secure, err := strconv.ParseBool(getenv("COOKIE_SECURE", "false"))
+	if err != nil {
+		return Config{}, fmt.Errorf("COOKIE_SECURE must be true or false, got %q", os.Getenv("COOKIE_SECURE"))
+	}
+	cfg.CookieSecure = secure
 	return cfg, nil
 }
 

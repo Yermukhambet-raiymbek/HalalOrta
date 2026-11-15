@@ -17,6 +17,7 @@ import (
 	"littlevillage/internal/db"
 	"littlevillage/internal/httpapi"
 	"littlevillage/internal/migrate"
+	"littlevillage/internal/store"
 	"littlevillage/migrations"
 )
 
@@ -52,9 +53,13 @@ func run() error {
 	}
 	slog.Info("database schema is up to date", "applied_now", applied)
 
+	router := httpapi.NewRouter(store.New(pool), httpapi.Options{
+		StaticDir:    cfg.StaticDir,
+		CookieSecure: cfg.CookieSecure,
+	})
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
-		Handler:           httpapi.NewRouter(pool, cfg.StaticDir),
+		Handler:           router,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      15 * time.Second,

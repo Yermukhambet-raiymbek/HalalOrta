@@ -31,7 +31,15 @@ HttpOnly cookie.
 - Frontend: React + TypeScript + Vite in `frontend/`.
 - One service: Go serves the API under `/api` and the built frontend from
   `STATIC_DIR`; any other path returns `index.html`.
-- Config only from environment variables: `DATABASE_URL`, `PORT`, `STATIC_DIR`.
+- Config only from environment variables: `DATABASE_URL`, `PORT`, `STATIC_DIR`,
+  `COOKIE_SECURE`.
+- Sessions: cookie `lv_device` holds a random device token; the DB stores
+  only its SHA-256 (`devices`). A browser can hold several members
+  (`device_members`) and one is active (`devices.active_member_id`), so the
+  whole demo works in one browser via the header switcher.
+- Code map: SQL only in `internal/store`; private routes only inside the
+  `requireMember` group in `internal/httpapi/router.go`; errors only via
+  `writeError` (`{"error": {"code", "message"}}`).
 
 ## Rules
 
@@ -39,7 +47,8 @@ HttpOnly cookie.
   shown comes from the database through the API.
 - Quiz grading happens on the server. Answer keys are never sent to the client.
 - Every private endpoint checks the session and the participant's family
-  membership.
+  membership: it sits behind `requireMember`, and the family ID always comes
+  from the session, never from the request.
 - No sign-up and no passwords.
 - UI, README and code comments are in English.
 - Keep scope minimal: only what the demo scenario needs.
@@ -57,6 +66,11 @@ From the repo root:
 
 - PowerShell: `docker run --rm -v "${PWD}/backend:/src" -v littlevillage-gomod:/go/pkg/mod -v littlevillage-gobuild:/root/.cache/go-build -w /src golang:1.27.4-alpine go vet ./...`
 - Git Bash: `MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W)/backend:/src" -v littlevillage-gomod:/go/pkg/mod -v littlevillage-gobuild:/root/.cache/go-build -w /src golang:1.27.4-alpine go vet ./...`
+
+Tests need the compose database: run `docker compose up -d --wait db`, then
+add `--network littlevillage_default -e "TEST_DATABASE_URL=postgres://littlevillage:littlevillage@db:5432/littlevillage?sslmode=disable"`
+to the command above and run `go test -count=1 ./...`. Without that variable
+the DB tests are skipped, so check that they ran (`-v`).
 
 Node runs on the host: `cd frontend && npm ci && npm run build`.
 Check the whole app with `docker compose up --build`, then
