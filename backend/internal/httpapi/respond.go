@@ -15,6 +15,8 @@ const (
 	codeNotFound         = "not_found"
 	codeInviteNotFound   = "invite_not_found"
 	codeLessonNotFound   = "lesson_not_found"
+	codeTaskNotFound     = "task_not_found"
+	codeTooManyTasks     = "too_many_tasks"
 	codeFamilyFull       = "family_full"
 	codeMethodNotAllowed = "method_not_allowed"
 	codeInternal         = "internal"

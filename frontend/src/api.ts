@@ -86,6 +86,43 @@ export type AttemptResult = {
   results: { correct: boolean; selected_index: number; correct_index: number; explanation: string }[];
 };
 
+export type TaskStatus = "open" | "done";
+
+/**
+ * A care task. required_lesson is the lesson that prepares for it and
+ * lesson_passed tells whether the assignee has passed that lesson; both are
+ * null for a task without a lesson.
+ */
+export type Task = {
+  id: string;
+  title: string;
+  status: TaskStatus;
+  /** A calendar day, YYYY-MM-DD. */
+  due_date: string;
+  assignee: { id: string; name: string };
+  created_by: { id: string; name: string };
+  required_lesson: LessonRef | null;
+  lesson_passed: boolean | null;
+  completed_at: string | null;
+  created_at: string;
+};
+
+export type NextLesson = {
+  slug: string;
+  title: string;
+  related_task: string;
+  question_count: number;
+  /** True when one of the member's open tasks requires this lesson. */
+  needed_for_task: boolean;
+};
+
+/** The active member's day: their tasks and the lesson to take next. */
+export type Today = {
+  date: string;
+  tasks: Task[];
+  next_lesson: NextLesson | null;
+};
+
 export type Invite = {
   family_name: string;
   invited_by: string;
@@ -110,7 +147,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<T> {
+async function request<T>(method: "GET" | "POST" | "PATCH", path: string, body?: unknown): Promise<T> {
   let res: Response;
   try {
     res = await fetch(path, {
@@ -146,6 +183,12 @@ export const api = {
   lesson: (slug: string) => request<Lesson>("GET", `/api/lessons/${encodeURIComponent(slug)}`),
   submitAttempt: (slug: string, answers: number[]) =>
     request<AttemptResult>("POST", `/api/lessons/${encodeURIComponent(slug)}/attempts`, { answers }),
+  tasks: () => request<{ tasks: Task[] }>("GET", "/api/tasks"),
+  createTask: (input: { title: string; assignee_id: string; lesson_slug: string; due_date: string }) =>
+    request<Task>("POST", "/api/tasks", input),
+  setTaskStatus: (taskId: string, status: TaskStatus) =>
+    request<Task>("PATCH", `/api/tasks/${encodeURIComponent(taskId)}`, { status }),
+  today: (date: string) => request<Today>("GET", `/api/today?date=${encodeURIComponent(date)}`),
   family: () => request<FamilyDetails>("GET", "/api/family"),
   invite: (token: string) => request<Invite>("GET", `/api/invites/${encodeURIComponent(token)}`),
   createFamily: (input: { family_name: string; member_name: string; relationship: string }) =>
@@ -158,6 +201,22 @@ export const api = {
 /** "Nov 15" style date for an API timestamp. */
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/** The browser's own calendar day as YYYY-MM-DD, offsetDays from today. */
+export function localDate(offsetDays = 0): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** "Today", "Tomorrow" or "Nov 15" for a YYYY-MM-DD calendar day. */
+export function formatDay(day: string): string {
+  if (day === localDate(0)) return "Today";
+  if (day === localDate(1)) return "Tomorrow";
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 /** A message that is safe to show the user for any thrown value. */

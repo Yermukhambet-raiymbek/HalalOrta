@@ -481,3 +481,76 @@ select:disabled {
   font-weight: 600;
   text-decoration: none;
 }
+
+/* Tasks */
+
+.task-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+
+.task {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.task:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.task-main {
+  display: flex;
+  flex: 1 1 16rem;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.task-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.task-done .task-title {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.task button {
+  flex: 0 0 auto;
+}
+
+.lesson-note {
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+.lesson-note-missing {
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.5rem;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.readiness {
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.readiness-ok {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.readiness-missing {
+  background: #fffbeb;
+  color: #92400e;
+}

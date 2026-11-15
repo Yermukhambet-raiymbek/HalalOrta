@@ -15,7 +15,9 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
 
   if (session.status === "loading") return <Loading />;
-  if (session.status === "ready") return <Navigate to="/family" replace />;
+  // A member who just created the family goes to the family page, where
+  // the invite link is. A returning member goes to their day.
+  if (session.status === "ready") return <Navigate to={submitting ? "/family" : "/today"} replace />;
   if (session.status === "error") return <ErrorMessage message={session.message} onRetry={reload} />;
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -24,6 +26,7 @@ export default function HomePage() {
     setError(null);
     try {
       // The new active member makes this page redirect to /family.
+      // submitting stays true so the redirect knows the family is new.
       setMe(await api.createFamily({ family_name: familyName, member_name: name, relationship }));
     } catch (err) {
       setError(errorMessage(err));

@@ -54,7 +54,7 @@ export default function JoinPage() {
     setError(null);
     try {
       setMe(await api.joinFamily({ token, member_name: name, relationship }));
-      navigate("/family");
+      navigate("/today");
     } catch (err) {
       setError(errorMessage(err));
       setSubmitting(false);

@@ -15,7 +15,7 @@ export default function Header() {
     setError(null);
     try {
       setMe(await api.switchMember(memberId));
-      navigate("/family");
+      navigate("/today");
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -31,7 +31,9 @@ export default function Header() {
         </Link>
         {session.status === "ready" && (
           <nav className="site-nav" aria-label="Main">
+            <NavLink to="/today">Today</NavLink>
             <NavLink to="/family">Family</NavLink>
+            <NavLink to="/tasks">Tasks</NavLink>
             <NavLink to="/learn">Learn</NavLink>
           </nav>
         )}

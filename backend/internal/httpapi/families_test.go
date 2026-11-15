@@ -353,6 +353,10 @@ func TestPrivateEndpointsNeedSession(t *testing.T) {
 		{http.MethodGet, "/api/lessons"},
 		{http.MethodGet, "/api/lessons/" + testLesson.Slug},
 		{http.MethodPost, "/api/lessons/" + testLesson.Slug + "/attempts"},
+		{http.MethodGet, "/api/tasks"},
+		{http.MethodPost, "/api/tasks"},
+		{http.MethodPatch, "/api/tasks/00000000-0000-4000-8000-000000000000"},
+		{http.MethodGet, "/api/today?date=2026-01-01"},
 	}
 	forged := newBrowser(t, srv)
 	forged.http.Jar.SetCookies(mustURL(t, srv.URL), []*http.Cookie{{Name: auth.CookieName, Value: "forged-token"}})
