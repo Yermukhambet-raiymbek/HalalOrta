@@ -111,9 +111,12 @@ the browser, so "today" is the family's own day, not the server's.
   binary and applied on startup.
 - Frontend: React + TypeScript + Vite. Plain CSS in `frontend/src/index.css`
   with a small token set (night ink, morning sky, yolk yellow). Fonts are
-  self-hosted from npm: Fredoka for headings and Atkinson Hyperlegible, a
+  self-hosted from npm: Bricolage Grotesque for headings and Atkinson Hyperlegible, a
   typeface made for readers with low vision, for everything else, because
   grandparents use the app too. On a phone the main links are a bottom bar.
+  Adding a task opens a panel that slides in from the side (a bottom sheet
+  on a phone), built on the native `<dialog>`. Motion is off for people who
+  ask for reduced motion.
 - One service: the Go server serves the API under `/api` and the built
   frontend for every other path (unknown paths get `index.html`).
 

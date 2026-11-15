@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { api, ApiError, errorMessage, illustrationUrl, localDate, type Load, type Me, type Today } from "../api";
+import AddTask from "../components/AddTask";
 import RequireMember from "../components/RequireMember";
 import { ErrorMessage, Loading } from "../components/Status";
 import TaskItem from "../components/TaskItem";
@@ -55,8 +56,8 @@ function TodayView({ me }: { me: Me }) {
         <h2>Your day</h2>
         {tasks.length === 0 ? (
           <p className="muted">
-            Nothing is assigned to you for today. Anyone in the family can give you a task on the{" "}
-            <Link to="/tasks">Tasks</Link> page.
+            Nothing is assigned to you for today. Anyone in the family can give you a task with the Add task
+            button.
           </p>
         ) : (
           <ul className="task-list">
@@ -72,7 +73,7 @@ function TodayView({ me }: { me: Me }) {
           </ul>
         )}
         <p>
-          See the whole <Link to="/schedule">family schedule</Link> or <Link to="/tasks">assign a task</Link>.
+          See the whole <Link to="/schedule">family schedule</Link>.
         </p>
       </section>
 
@@ -106,6 +107,8 @@ function TodayView({ me }: { me: Me }) {
         )}
       </section>
       </div>
+
+      <AddTask me={me} onCreated={() => setAttempt((n) => n + 1)} />
     </>
   );
 }

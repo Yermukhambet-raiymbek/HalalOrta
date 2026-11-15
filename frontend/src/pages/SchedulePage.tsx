@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
 import {
   addDays,
   api,
@@ -12,6 +11,7 @@ import {
   type Me,
   type Task,
 } from "../api";
+import AddTask from "../components/AddTask";
 import RequireMember from "../components/RequireMember";
 import { ErrorMessage, Loading } from "../components/Status";
 import TaskItem from "../components/TaskItem";
@@ -149,14 +149,17 @@ function ScheduleView({ me }: { me: Me }) {
             ))}
           </ul>
         )}
-        {selected >= today && (
-          <div className="button-row">
-            <Link to={`/tasks?date=${selected}`} className="button-link">
-              Add a task for this day
-            </Link>
-          </div>
-        )}
       </section>
+
+      <AddTask
+        // Reopen the form on the day that is selected now.
+        key={selected}
+        me={me}
+        date={selected}
+        onCreated={(task) =>
+          setTasks((prev) => (prev.status === "ready" ? { ...prev, data: [...prev.data, task] } : prev))
+        }
+      />
     </>
   );
 }

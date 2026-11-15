@@ -38,7 +38,9 @@ export default function HomePage() {
     <>
       <section className="hero">
         <div>
-          <h1>Going back to work? Hand over baby care with confidence.</h1>
+          <h1>
+            <span>Going back to work?</span> <span>Hand over baby care with confidence.</span>
+          </h1>
           <p className="hero-lead">
             LittleVillage gets grandparents and other helpers ready with short lessons, and puts the baby's day on
             one shared schedule, so nobody has to call you with questions.
