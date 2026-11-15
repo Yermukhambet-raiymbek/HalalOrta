@@ -80,7 +80,7 @@ function FamilyView({ me }: { me: Me }) {
         <h2>Learning progress</h2>
         <ProgressTable members={members} lessons={lessons} />
         <p>
-          <Link to="/learn">Go to lessons</Link>
+          <Link to="/learn">Go to lessons</Link> · <Link to="/tasks">Assign a task</Link>
         </p>
       </section>
 

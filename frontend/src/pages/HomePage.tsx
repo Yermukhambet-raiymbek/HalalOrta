@@ -42,6 +42,19 @@ export default function HomePage() {
           LittleVillage gives everyone who helps with the baby one shared family space. Start yours here, then
           invite the others with a link. No sign-up and no passwords: this browser remembers you.
         </p>
+        <ol className="plain-list how-it-works">
+          <li>
+            <strong>Learn together.</strong> Parents, grandparents and other helpers take short lessons on baby care,
+            each with a quiz.
+          </li>
+          <li>
+            <strong>See who is prepared.</strong> Everyone's results are in one family table.
+          </li>
+          <li>
+            <strong>Share the care.</strong> Assign tasks such as a nap or a bath. Each task shows whether the person
+            doing it has passed the lesson for it.
+          </li>
+        </ol>
       </section>
 
       <section className="card">

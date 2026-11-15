@@ -5,9 +5,53 @@ whole family learns baby care together: everyone takes short lessons with a
 quiz, sees each other's progress, and shares care tasks. There are no
 accounts or passwords; a participant is identified by a session cookie.
 
-**Current state:** families, invite links and browser sessions work end to
-end: create a family, invite relatives by link, and switch between several
-family members in one browser. Lessons, quizzes and care tasks come next.
+**Live app:** https://halalorta.onrender.com (free hosting: the first
+request after a quiet period can take up to a minute while the server
+wakes up).
+
+## Try it in two minutes
+
+No sign-up, and one browser is enough.
+
+1. Open the app and create a family as a parent (for example Anna, Mom).
+2. On the Family page copy the invite link and open it in the same browser.
+   Join as a second person (for example Mary, Grandma). The header now has
+   a "You are" switcher between the two.
+3. Switch to Anna, open **Tasks** and assign "Put baby down for a nap" to
+   Mary. Before you assign, the form says Mary has not passed the lesson
+   "Safe Infant Sleep".
+4. Switch to Mary. Her **Today** page shows the task, a note to take the
+   lesson first, and the lesson as her next one.
+5. Take the lesson and the quiz. Every answer must be correct to pass; you
+   can retake it.
+6. Back on Today the task now shows the lesson as passed. Mark it as done.
+7. Switch to Anna and reload: the Family page shows Mary's result, and the
+   Tasks page shows the finished task.
+
+## What the product does
+
+- **Family space.** One person creates a family and shares an invite link.
+  Everyone who helps with the baby joins with just a name.
+- **Lessons with quizzes.** Short lessons based on AAP and CDC guidance,
+  each with a link to its source. Quizzes are graded on the server; the
+  answer key is sent only after a submission.
+- **Family progress.** One table with every member's best result per lesson.
+- **Care tasks with a lesson check.** A task can name the lesson that
+  prepares for it. Whether the assignee has passed that lesson is read from
+  their quiz attempts on every request, so it is never stale, and it is
+  shown before assigning and on the task itself. Only the assignee can mark
+  a task done.
+- **Today.** The active member's tasks for their calendar day (overdue ones
+  included) and the lesson to take next, preferring a lesson that one of
+  their open tasks needs.
+- **Pricing.** What is free today and what the planned paid family plan
+  adds. No payments are taken. A member can say their family would use the
+  paid plan; that is saved and counted per family.
+
+Everything shown comes from PostgreSQL through the API. Nothing is mocked
+or hardcoded. The only static content is the lesson text, which lives in
+`backend/content/lessons/*.json`, is validated on startup, and is synced to
+the database.
 
 ## How sessions work
 
@@ -35,12 +79,26 @@ All responses are JSON. Errors look like
 | `POST /api/families`        | public  | `{family_name, member_name, relationship}`: create a family, its owner and invite link; the owner becomes active in this browser |
 | `GET /api/invites/{token}`  | public  | Family name and inviter's name; 404 for an unknown link |
 | `POST /api/families/join`   | public  | `{token, member_name, relationship}`: join by invite; the new member becomes active in this browser |
-| `GET /api/me`               | session | Active member, their family, and all members of this browser; 401 without one |
-| `GET /api/family`           | session | The active member's family, members and invite link |
+| `GET /api/me`               | public  | Active member, their family, and all members of this browser; `{"member": null}` for a new visitor |
+| `GET /api/family`           | session | The active member's family, members with their lesson progress, and the invite link |
 | `POST /api/session/switch`  | session | `{member_id}`: make another member of this browser active; 403 for anyone else |
+| `GET /api/lessons`          | session | Lessons with the active member's own status |
+| `GET /api/lessons/{slug}`   | session | One lesson with its questions, without the answer key |
+| `POST /api/lessons/{slug}/attempts` | session | `{answers: [..]}`: grade on the server, save the attempt, return the score, the key and explanations |
+| `GET /api/tasks`            | session | Every task of the family, each with `required_lesson` and `lesson_passed` for its assignee |
+| `POST /api/tasks`           | session | `{title, assignee_id, lesson_slug?, due_date}`: assign a task to a member of the same family |
+| `PATCH /api/tasks/{id}`     | session | `{status: "done" \| "open"}`: only the assignee; 403 for other family members, 404 outside the family |
+| `GET /api/today?date=YYYY-MM-DD` | session | The active member's tasks for their calendar day and their next lesson |
+| `GET /api/plan/interest`    | session | Whether the member, and how many of the family, would use the paid plan |
+| `POST /api/plan/interest`   | session | Save the active member's interest in the paid plan (no payment) |
+
+"session" endpoints answer 401 without an active member. The family is
+always taken from the session, never from the request.
 
 Names are trimmed and must be 1 to 40 characters. `relationship` is one of
-Mom, Dad, Grandma, Grandpa, Other. A family has at most 10 members.
+Mom, Dad, Grandma, Grandpa, Other. A family has at most 10 members and 200
+tasks. Task titles are 1 to 80 characters. Dates are calendar days sent by
+the browser, so "today" is the family's own day, not the server's.
 
 ## Stack
 
@@ -124,6 +182,14 @@ MSYS_NO_PATHCONV=1 docker run --rm --network littlevillage_default -e "TEST_DATA
 
 Without `TEST_DATABASE_URL` the database tests are skipped.
 
+What the tests cover: a member of one family cannot read or change another
+family's data (family, progress, tasks); a browser can switch only to its
+own members; quiz grading, and that the answer key never reaches the client
+before a submission; task rules (only the assignee changes status, the
+assignee must be in the family, `lesson_passed` follows quiz attempts); the
+Today selection and next lesson; input validation; session cookie flags;
+lesson file validation.
+
 ## Configuration
 
 The server reads environment variables only (see `.env.example`):
@@ -152,20 +218,24 @@ backend/
   internal/db/       pgx connection pool
   internal/migrate/  embedded migration runner
   internal/auth/     device tokens, session cookie, session context
-  internal/store/    all SQL for families, members, invites, devices
+  internal/store/    all SQL: families, members, invites, devices, lessons, attempts, tasks
   internal/httpapi/  routes, session middleware, handlers, SPA file server, API tests
+  content/           lesson files (embedded), their loader and validation
   internal/testdb/   per-test PostgreSQL schema for the tests
   migrations/        SQL files (embedded)
 frontend/
   src/api.ts         typed API client
   src/session.tsx    active member state (GET /api/me)
-  src/pages/         start page, invite page, family page
-  src/components/    header with member switcher, form fields, status messages
+  src/pages/         start, invite, Today, family, tasks, lessons, lesson with quiz, pricing
+  src/components/    header with member switcher, task item, form fields, footer, status messages
 Dockerfile           multi-stage build: frontend, Go binary, distroless runtime
 docker-compose.yml   app + PostgreSQL for local runs
 ```
 
 ## Deploy
 
-Build the root `Dockerfile` and set `DATABASE_URL` and `COOKIE_SECURE=true`.
+The live app runs on Render: a Docker web service built from the root
+`Dockerfile` plus a Render PostgreSQL database, redeployed on every push to
+`main`. To deploy elsewhere, build the root `Dockerfile` and set
+`DATABASE_URL` and `COOKIE_SECURE=true`.
 The image listens on `PORT` (default 8080) and stops gracefully on SIGTERM.

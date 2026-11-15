@@ -28,6 +28,7 @@ func NewRouter(st *store.Store, opts Options) http.Handler {
 	fh := &familyHandlers{store: st, cookieSecure: opts.CookieSecure}
 	lh := &lessonHandlers{store: st}
 	th := &taskHandlers{store: st}
+	ph := &planHandlers{store: st}
 
 	r := chi.NewRouter()
 	r.Use(logRequests)
@@ -57,6 +58,8 @@ func NewRouter(st *store.Store, opts Options) http.Handler {
 			r.Post("/tasks", th.create)
 			r.Patch("/tasks/{id}", th.update)
 			r.Get("/today", th.today)
+			r.Get("/plan/interest", ph.interest)
+			r.Post("/plan/interest", ph.register)
 		})
 
 		// Unknown API paths get JSON errors, never the SPA's index.html.

@@ -123,6 +123,13 @@ export type Today = {
   next_lesson: NextLesson | null;
 };
 
+/** How much of the family has asked for the paid plan. */
+export type PlanInterest = {
+  interested: boolean;
+  family_interested: number;
+  family_members: number;
+};
+
 export type Invite = {
   family_name: string;
   invited_by: string;
@@ -189,6 +196,8 @@ export const api = {
   setTaskStatus: (taskId: string, status: TaskStatus) =>
     request<Task>("PATCH", `/api/tasks/${encodeURIComponent(taskId)}`, { status }),
   today: (date: string) => request<Today>("GET", `/api/today?date=${encodeURIComponent(date)}`),
+  planInterest: () => request<PlanInterest>("GET", "/api/plan/interest"),
+  registerPlanInterest: () => request<PlanInterest>("POST", "/api/plan/interest"),
   family: () => request<FamilyDetails>("GET", "/api/family"),
   invite: (token: string) => request<Invite>("GET", `/api/invites/${encodeURIComponent(token)}`),
   createFamily: (input: { family_name: string; member_name: string; relationship: string }) =>

@@ -29,14 +29,17 @@ export default function Header() {
         <Link to="/" className="brand">
           LittleVillage
         </Link>
-        {session.status === "ready" && (
-          <nav className="site-nav" aria-label="Main">
-            <NavLink to="/today">Today</NavLink>
-            <NavLink to="/family">Family</NavLink>
-            <NavLink to="/tasks">Tasks</NavLink>
-            <NavLink to="/learn">Learn</NavLink>
-          </nav>
-        )}
+        <nav className="site-nav" aria-label="Main">
+          {session.status === "ready" && (
+            <>
+              <NavLink to="/today">Today</NavLink>
+              <NavLink to="/family">Family</NavLink>
+              <NavLink to="/tasks">Tasks</NavLink>
+              <NavLink to="/learn">Learn</NavLink>
+            </>
+          )}
+          <NavLink to="/pricing">Pricing</NavLink>
+        </nav>
         {session.status === "ready" &&
           (session.me.device_members.length > 1 ? (
             <label className="switcher">

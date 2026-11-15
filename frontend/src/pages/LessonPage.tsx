@@ -146,8 +146,8 @@ function Quiz({ lesson }: { lesson: Lesson }) {
           <button type="button" onClick={tryAgain}>
             Try again
           </button>
-          <Link to="/family" className="button-link">
-            Back to family
+          <Link to="/today" className="button-link">
+            Back to Today
           </Link>
         </div>
       </section>
