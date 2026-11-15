@@ -13,6 +13,7 @@ type todayView struct {
 	Date       string            `json:"date"`
 	Tasks      []store.Task      `json:"tasks"`
 	NextLesson *store.NextLesson `json:"next_lesson"`
+	Setup      store.Setup       `json:"setup"`
 }
 
 // day returns the UTC calendar day offset days from today as YYYY-MM-DD.
@@ -278,6 +279,63 @@ func TestTaskCategoryAndTime(t *testing.T) {
 	}
 	if got := b.tasks(); len(got) != 5 {
 		t.Fatalf("invalid tasks were saved: %d tasks", len(got))
+	}
+}
+
+func TestRepeatingTaskAndSetupCounts(t *testing.T) {
+	t.Parallel()
+	srv, _ := newServer(t)
+	mom := newBrowser(t, srv)
+	mom.createFamily("Smiths", "Anna", "Mom")
+	if got := mom.today(day(0)).Setup; got != (store.Setup{Members: 1}) {
+		t.Fatalf("setup of a new family: %+v", got)
+	}
+	grandma := newBrowser(t, srv)
+	mary := grandma.join(mom.family().Invite.Token, "Mary", "Grandma")
+
+	// One request creates the task on seven days in a row.
+	var first store.Task
+	body := map[string]any{
+		"title": "Evening bath", "assignee_id": mary.Member.ID, "category": "care",
+		"due_date": day(0), "due_time": "19:00", "repeat_days": 7,
+	}
+	if code := mom.call(http.MethodPost, "/api/tasks", body, &first); code != http.StatusCreated || first.DueDate != day(0) {
+		t.Fatalf("repeat for a week: status %d %+v", code, first)
+	}
+	all := mom.tasks()
+	if len(all) != 7 {
+		t.Fatalf("want 7 tasks, got %d", len(all))
+	}
+	for i, task := range all {
+		if task.DueDate != day(i) || task.Title != "Evening bath" || *task.DueTime != "19:00" || task.Assignee.ID != mary.Member.ID {
+			t.Fatalf("task %d: %+v", i, task)
+		}
+	}
+	// Each day is its own task: finishing today's leaves tomorrow's open.
+	grandma.setStatus(first.ID, "done")
+	if got := grandma.today(day(1)).Tasks; len(got) != 1 || got[0].Status != "open" || got[0].DueDate != day(1) {
+		t.Fatalf("tomorrow after finishing today: %+v", got)
+	}
+
+	for _, n := range []int{-1, 8, 365} {
+		var e apiError
+		body["repeat_days"] = n
+		if code := mom.call(http.MethodPost, "/api/tasks", body, &e); code != http.StatusBadRequest || e.Error.Code != "validation_error" {
+			t.Errorf("repeat_days %d: status %d code %q, want 400", n, code, e.Error.Code)
+		}
+	}
+
+	grandma.attempt("test-lesson", 1, 0, 3)
+	grandma.attempt("test-lesson", 1, 0, 3) // passing twice counts once
+	want := store.Setup{Members: 2, Tasks: 7, LessonsPassed: 1, TasksDone: 1}
+	if got := mom.today(day(0)).Setup; got != want {
+		t.Fatalf("setup: %+v, want %+v", got, want)
+	}
+	// Another family starts from zero.
+	other := newBrowser(t, srv)
+	other.createFamily("Others", "Bob", "Dad")
+	if got := other.today(day(0)).Setup; got != (store.Setup{Members: 1}) {
+		t.Fatalf("other family's setup: %+v", got)
 	}
 }
 

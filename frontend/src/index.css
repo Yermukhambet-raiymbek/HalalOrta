@@ -784,13 +784,14 @@ select:disabled {
 
 .task {
   display: grid;
-  grid-template-columns: 5.4rem minmax(0, 1fr);
+  grid-template-columns: 6.2rem minmax(0, 1fr);
 }
 
 .task-when {
   padding: 0.85rem 1rem 0 0;
   text-align: right;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .task-time {
@@ -1131,11 +1132,12 @@ select:disabled {
   }
 
   .task {
-    grid-template-columns: 4.3rem minmax(0, 1fr);
+    grid-template-columns: 5.1rem minmax(0, 1fr);
   }
 
   .task-when {
     padding-right: 0.8rem;
+    font-size: 0.9rem;
   }
 
   .lesson-cover {
@@ -1194,6 +1196,77 @@ select:disabled {
   body:has(.site-nav a:nth-child(2)) {
     padding-bottom: 4.25rem;
   }
+}
+
+/* First-day checklist on Today. */
+
+.getting-started {
+  border-color: var(--ink);
+}
+
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checklist li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  color: var(--ink-soft);
+}
+
+.checklist .check {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-weight: 750;
+}
+
+.checklist .is-done {
+  text-decoration: line-through;
+}
+
+.checklist .is-done .check {
+  border-color: var(--sea);
+  background: var(--sea);
+  color: #fff;
+  text-decoration: none;
+}
+
+.checklist .is-next {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.checklist .is-next .check {
+  border-color: var(--ink);
+  background: var(--yolk);
+}
+
+.checklist .button-link {
+  margin-left: auto;
+  padding: 0.4rem 1rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* Quiz: one question at a time. */

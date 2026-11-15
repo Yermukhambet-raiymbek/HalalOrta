@@ -43,6 +43,9 @@ type createTaskRequest struct {
 	DueDate  string `json:"due_date"`
 	// DueTime is the time of day as HH:MM. Optional: empty means any time.
 	DueTime string `json:"due_time"`
+	// RepeatDays creates the task on this many days in a row, starting with
+	// DueDate. Optional: 0 and 1 both mean once; the most is 7.
+	RepeatDays int `json:"repeat_days"`
 }
 
 type updateTaskRequest struct {
@@ -53,6 +56,8 @@ type todayResponse struct {
 	Date       string            `json:"date"`
 	Tasks      []store.Task      `json:"tasks"`
 	NextLesson *store.NextLesson `json:"next_lesson"`
+	// Setup is what the family has done so far, for the first-day checklist.
+	Setup store.Setup `json:"setup"`
 }
 
 // GET /api/tasks (private): every task of the session's family.
@@ -99,10 +104,14 @@ func (h *taskHandlers) create(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, codeValidation, "Time must be a time of day as HH:MM, for example 14:00.")
 		return
 	}
+	if req.RepeatDays < 0 || req.RepeatDays > store.MaxRepeatDays {
+		writeError(w, http.StatusBadRequest, codeValidation, "A task can repeat for 1 to 7 days in a row.")
+		return
+	}
 
 	task, err := h.store.CreateTask(r.Context(), sess.FamilyID, sess.MemberID, store.NewTask{
 		Title: title, AssigneeID: req.AssigneeID, LessonSlug: req.LessonSlug,
-		Category: req.Category, DueDate: req.DueDate, DueTime: req.DueTime,
+		Category: req.Category, DueDate: req.DueDate, DueTime: req.DueTime, RepeatDays: req.RepeatDays,
 	})
 	switch {
 	case errors.Is(err, store.ErrAssigneeNotInFamily):
@@ -174,7 +183,12 @@ func (h *taskHandlers) today(w http.ResponseWriter, r *http.Request) {
 		writeInternal(w, r, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, todayResponse{Date: date, Tasks: tasks, NextLesson: next})
+	setup, err := h.store.FamilySetup(r.Context(), sess.FamilyID)
+	if err != nil {
+		writeInternal(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, todayResponse{Date: date, Tasks: tasks, NextLesson: next, Setup: setup})
 }
 
 func writeTaskNotFound(w http.ResponseWriter) {

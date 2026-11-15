@@ -11,6 +11,9 @@ import (
 // MaxTasks is the most tasks one family can have.
 const MaxTasks = 200
 
+// MaxRepeatDays is the most days in a row one task can be repeated on.
+const MaxRepeatDays = 7
+
 // TaskCategories are the allowed values of tasks.category. The first one
 // is the default.
 var TaskCategories = []string{"care", "feeding", "health", "appointment", "shopping"}
@@ -66,6 +69,18 @@ type NewTask struct {
 	Category   string
 	DueDate    string // YYYY-MM-DD
 	DueTime    string // HH:MM, or "" for any time
+	// RepeatDays is how many days in a row to create the task on, starting
+	// with DueDate. 0 and 1 both mean once.
+	RepeatDays int
+}
+
+// Setup counts what a family has done so far. The first-day checklist is
+// built from it.
+type Setup struct {
+	Members       int `json:"members"`
+	Tasks         int `json:"tasks"`
+	LessonsPassed int `json:"lessons_passed"`
+	TasksDone     int `json:"tasks_done"`
 }
 
 // NextLesson is the lesson a member should take next.
@@ -148,10 +163,12 @@ func (s *Store) taskByID(ctx context.Context, familyID, taskID string) (Task, er
 	return task, err
 }
 
-// CreateTask adds an open task to the family. The assignee must be a member
-// of that family. It returns ErrAssigneeNotInFamily, ErrLessonNotFound or
+// CreateTask adds an open task to the family, once or on several days in a
+// row, and returns the first one. The assignee must be a member of that
+// family. It returns ErrAssigneeNotInFamily, ErrLessonNotFound or
 // ErrTooManyTasks when the input does not fit.
 func (s *Store) CreateTask(ctx context.Context, familyID, createdBy string, in NewTask) (Task, error) {
+	days := max(in.RepeatDays, 1)
 	var taskID string
 	err := pgx.BeginFunc(ctx, s.pool, func(tx pgx.Tx) error {
 		// Lock the family row so concurrent requests cannot pass the limit.
@@ -171,7 +188,7 @@ func (s *Store) CreateTask(ctx context.Context, familyID, createdBy string, in N
 		if err := tx.QueryRow(ctx, `SELECT count(*) FROM tasks WHERE family_id = $1`, familyID).Scan(&count); err != nil {
 			return err
 		}
-		if count >= MaxTasks {
+		if count+days > MaxTasks {
 			return ErrTooManyTasks
 		}
 		var dueTime *string
@@ -190,12 +207,21 @@ func (s *Store) CreateTask(ctx context.Context, familyID, createdBy string, in N
 			}
 			lessonID = &id
 		}
-		return tx.QueryRow(ctx, `
-			INSERT INTO tasks (family_id, title, lesson_id, assignee_id, created_by, category, due_date, due_time)
-			VALUES ($1, $2, $3, $4, $5, $6, $7::date, $8::time)
-			RETURNING id`,
-			familyID, in.Title, lessonID, in.AssigneeID, createdBy, in.Category, in.DueDate, dueTime,
-		).Scan(&taskID)
+		for day := 0; day < days; day++ {
+			var id string
+			if err := tx.QueryRow(ctx, `
+				INSERT INTO tasks (family_id, title, lesson_id, assignee_id, created_by, category, due_date, due_time)
+				VALUES ($1, $2, $3, $4, $5, $6, $7::date + $9::int, $8::time)
+				RETURNING id`,
+				familyID, in.Title, lessonID, in.AssigneeID, createdBy, in.Category, in.DueDate, dueTime, day,
+			).Scan(&id); err != nil {
+				return err
+			}
+			if day == 0 {
+				taskID = id
+			}
+		}
+		return nil
 	})
 	if err != nil {
 		return Task{}, err
@@ -257,4 +283,21 @@ func (s *Store) NextLessonFor(ctx context.Context, memberID string) (*NextLesson
 		return nil, err
 	}
 	return &n, nil
+}
+
+// FamilySetup counts the family's members, tasks, finished tasks and
+// passed lessons (one per member and lesson). Callers must pass the family
+// ID from the session.
+func (s *Store) FamilySetup(ctx context.Context, familyID string) (Setup, error) {
+	var st Setup
+	err := s.pool.QueryRow(ctx, `
+		SELECT (SELECT count(*) FROM members WHERE family_id = $1),
+		       (SELECT count(*) FROM tasks WHERE family_id = $1),
+		       (SELECT count(DISTINCT (a.member_id, a.lesson_id))
+		        FROM quiz_attempts a JOIN members m ON m.id = a.member_id
+		        WHERE m.family_id = $1 AND a.passed),
+		       (SELECT count(*) FROM tasks WHERE family_id = $1 AND status = 'done')`,
+		familyID,
+	).Scan(&st.Members, &st.Tasks, &st.LessonsPassed, &st.TasksDone)
+	return st, err
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { api, ApiError, errorMessage, illustrationUrl, localDate, type Load, type Me, type Today } from "../api";
+import { api, ApiError, errorMessage, illustrationUrl, localDate, type Load, type Me, type Setup, type Today } from "../api";
 import AddTask from "../components/AddTask";
 import RequireMember from "../components/RequireMember";
 import { ErrorMessage, Loading } from "../components/Status";
@@ -50,6 +50,8 @@ function TodayView({ me }: { me: Me }) {
       <p className="muted">
         {dateLabel}. {me.member.name}, {summary(tasks.length, open)}
       </p>
+
+      <GettingStarted setup={today.data.setup} />
 
       <div className="today-grid">
       <section className="card">
@@ -110,6 +112,53 @@ function TodayView({ me }: { me: Me }) {
 
       <AddTask me={me} onCreated={() => setAttempt((n) => n + 1)} />
     </>
+  );
+}
+
+/**
+ * The first-day checklist. Each line is checked from what the family has
+ * really done, and the whole card goes away once all four are done.
+ */
+function GettingStarted({ setup }: { setup: Setup }) {
+  const steps = [
+    {
+      done: setup.members > 1,
+      text: "Invite someone who helps with the baby",
+      to: "/family",
+      action: "Get the invite link",
+    },
+    { done: setup.tasks > 0, text: "Assign a care task", to: "/tasks", action: "Assign a task" },
+    { done: setup.lessons_passed > 0, text: "Pass the lesson for that task", to: "/learn", action: "Open lessons" },
+    { done: setup.tasks_done > 0, text: "Mark the task as done", to: "/schedule", action: "See the schedule" },
+  ];
+  const doneCount = steps.filter((s) => s.done).length;
+  if (doneCount === steps.length) return null;
+  const next = steps.findIndex((s) => !s.done);
+
+  return (
+    <section className="card getting-started">
+      <h2>
+        Getting started: {doneCount} of {steps.length} done
+      </h2>
+      <ol className="checklist">
+        {steps.map((s, i) => (
+          <li key={s.text} className={s.done ? "is-done" : i === next ? "is-next" : undefined}>
+            <span className="check" aria-hidden="true">
+              {s.done ? "✓" : i + 1}
+            </span>
+            <span>
+              {s.text}
+              {s.done && <span className="visually-hidden"> (done)</span>}
+            </span>
+            {i === next && (
+              <Link to={s.to} className="button-link">
+                {s.action}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 

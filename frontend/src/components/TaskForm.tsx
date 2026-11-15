@@ -38,6 +38,7 @@ export default function TaskForm({ me, members, lessons, initialDate = "", onCre
     /^\d{4}-\d{2}-\d{2}$/.test(initialDate) && initialDate >= today ? initialDate : today,
   );
   const [dueTime, setDueTime] = useState("");
+  const [repeatDays, setRepeatDays] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,6 +63,7 @@ export default function TaskForm({ me, members, lessons, initialDate = "", onCre
           category,
           due_date: dueDate,
           due_time: dueTime,
+          repeat_days: repeatDays,
         }),
       );
       setCustomTitle("");
@@ -177,6 +179,19 @@ export default function TaskForm({ me, members, lessons, initialDate = "", onCre
             disabled={saving}
           />
         </div>
+      </div>
+
+      <div className="field">
+        <label htmlFor={`${id}-repeat`}>Repeat</label>
+        <select
+          id={`${id}-repeat`}
+          value={repeatDays}
+          onChange={(e) => setRepeatDays(Number(e.target.value))}
+          disabled={saving}
+        >
+          <option value={1}>Just this day</option>
+          <option value={7}>Every day for a week</option>
+        </select>
       </div>
 
       {lesson && assignee && (

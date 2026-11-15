@@ -140,10 +140,19 @@ export type NextLesson = {
 };
 
 /** The active member's day: their tasks and the lesson to take next. */
+/** What the family has done so far, for the first-day checklist. */
+export type Setup = {
+  members: number;
+  tasks: number;
+  lessons_passed: number;
+  tasks_done: number;
+};
+
 export type Today = {
   date: string;
   tasks: Task[];
   next_lesson: NextLesson | null;
+  setup: Setup;
 };
 
 /** How much of the family has asked for the paid plan. */
@@ -221,6 +230,8 @@ export const api = {
     category: TaskCategory;
     due_date: string;
     due_time: string;
+    /** Create the task on this many days in a row; 1 means once. */
+    repeat_days: number;
   }) =>
     request<Task>("POST", "/api/tasks", input),
   setTaskStatus: (taskId: string, status: TaskStatus) =>

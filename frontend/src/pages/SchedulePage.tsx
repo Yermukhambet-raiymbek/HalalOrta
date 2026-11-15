@@ -34,7 +34,8 @@ function ScheduleView({ me }: { me: Me }) {
 
   useEffect(() => {
     let cancelled = false;
-    setTasks({ status: "loading" });
+    // Keep the week on screen while it is refreshed after a change.
+    setTasks((prev) => (prev.status === "ready" ? prev : { status: "loading" }));
     api.tasks().then(
       (data) => !cancelled && setTasks({ status: "ready", data: data.tasks }),
       (err: unknown) => {
@@ -156,9 +157,8 @@ function ScheduleView({ me }: { me: Me }) {
         key={selected}
         me={me}
         date={selected}
-        onCreated={(task) =>
-          setTasks((prev) => (prev.status === "ready" ? { ...prev, data: [...prev.data, task] } : prev))
-        }
+        // Refetch: one request can create the task on several days.
+        onCreated={() => setAttempt((n) => n + 1)}
       />
     </>
   );

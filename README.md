@@ -46,6 +46,11 @@ No sign-up, and one browser is enough.
   care, feeding, health, appointment, shopping), a day and an optional time
   of day. The Schedule page shows seven days at a time for the whole
   family, colored by category, with who does what and when.
+- **Repeat for a week.** One request creates a task on seven days in a
+  row, so tomorrow's schedule is already there when the family comes back.
+- **First-day checklist.** Today shows four steps (invite a helper, assign
+  a task, pass its lesson, mark it done), each checked from what the
+  family has really done; the card disappears when all four are done.
 - **Today.** The active member's tasks for their calendar day (overdue ones
   included) and the lesson to take next, preferring a lesson that one of
   their open tasks needs.
@@ -91,7 +96,7 @@ All responses are JSON. Errors look like
 | `GET /api/lessons/{slug}`   | session | One lesson with its questions, without the answer key |
 | `POST /api/lessons/{slug}/attempts` | session | `{answers: [..]}`: grade on the server, save the attempt, return the score, the key and explanations |
 | `GET /api/tasks`            | session | Every task of the family, each with `required_lesson` and `lesson_passed` for its assignee |
-| `POST /api/tasks`           | session | `{title, assignee_id, lesson_slug?, category?, due_date, due_time?}`: assign a task to a member of the same family |
+| `POST /api/tasks`           | session | `{title, assignee_id, lesson_slug?, category?, due_date, due_time?, repeat_days?}`: assign a task to a member of the same family, once or on up to 7 days in a row |
 | `PATCH /api/tasks/{id}`     | session | `{status: "done" \| "open"}`: only the assignee; 403 for other family members, 404 outside the family |
 | `GET /api/today?date=YYYY-MM-DD` | session | The active member's tasks for their calendar day and their next lesson |
 | `GET /api/plan/interest`    | session | Whether the member, and how many of the family, would use the paid plan |
@@ -245,6 +250,9 @@ docker-compose.yml   app + PostgreSQL for local runs
 ```
 
 ## Deploy
+
+A scheduled GitHub Actions job (`.github/workflows/keep-awake.yml`) asks
+`/api/health` every few minutes so the free instance stays awake.
 
 The live app runs on Render: a Docker web service built from the root
 `Dockerfile` plus a Render PostgreSQL database, redeployed on every push to

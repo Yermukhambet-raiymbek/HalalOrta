@@ -32,7 +32,8 @@ function TasksView({ me }: { me: Me }) {
 
   useEffect(() => {
     let cancelled = false;
-    setState({ status: "loading" });
+    // Keep the page on screen while it is refreshed after a change.
+    setState((prev) => (prev.status === "ready" ? prev : { status: "loading" }));
     Promise.all([api.family(), api.lessons(), api.tasks()]).then(
       ([family, lessons, tasks]) =>
         !cancelled &&
@@ -78,7 +79,8 @@ function TasksView({ me }: { me: Me }) {
           lessons={lessons}
           // The schedule can link here with ?date=YYYY-MM-DD to plan a day.
           initialDate={params.get("date") ?? ""}
-          onCreated={(task) => setTasks((all) => [task, ...all])}
+          // Refetch: one request can create the task on several days.
+          onCreated={() => setAttempt((n) => n + 1)}
         />
       </section>
 
