@@ -72,7 +72,7 @@ function FamilyView({ me }: { me: Me }) {
               </span>
               <span className="muted">
                 {m.relationship}
-                {m.is_owner && " · created the family"}
+                {m.is_owner && ", created the family"}
               </span>
             </li>
           ))}
@@ -82,9 +82,12 @@ function FamilyView({ me }: { me: Me }) {
       <section className="card">
         <h2>Learning progress</h2>
         <ProgressTable members={members} lessons={lessons} />
-        <p>
-          <Link to="/learn">Go to lessons</Link> · <Link to="/tasks">Assign a task</Link>
-        </p>
+        <div className="button-row">
+          <Link to="/tasks" className="button-link">
+            Assign a task
+          </Link>
+          <Link to="/learn">Go to lessons</Link>
+        </div>
       </section>
 
       <section className="card">

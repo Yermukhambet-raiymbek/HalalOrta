@@ -109,7 +109,11 @@ the browser, so "today" is the family's own day, not the server's.
 
 - Backend: Go (chi, pgx), PostgreSQL. SQL migrations are embedded in the
   binary and applied on startup.
-- Frontend: React + TypeScript + Vite.
+- Frontend: React + TypeScript + Vite. Plain CSS in `frontend/src/index.css`
+  with a small token set (night ink, morning sky, yolk yellow). Fonts are
+  self-hosted from npm: Fredoka for headings and Atkinson Hyperlegible, a
+  typeface made for readers with low vision, for everything else, because
+  grandparents use the app too. On a phone the main links are a bottom bar.
 - One service: the Go server serves the API under `/api` and the built
   frontend for every other path (unknown paths get `index.html`).
 

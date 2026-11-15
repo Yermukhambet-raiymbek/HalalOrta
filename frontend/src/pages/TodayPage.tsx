@@ -47,11 +47,12 @@ function TodayView({ me }: { me: Me }) {
     <>
       <h1>Today</h1>
       <p className="muted">
-        {dateLabel} · {me.member.name}, {summary(tasks.length, open)}
+        {dateLabel}. {me.member.name}, {summary(tasks.length, open)}
       </p>
 
+      <div className="today-grid">
       <section className="card">
-        <h2>Your tasks</h2>
+        <h2>Your day</h2>
         {tasks.length === 0 ? (
           <p className="muted">
             Nothing is assigned to you for today. Anyone in the family can give you a task on the{" "}
@@ -71,7 +72,7 @@ function TodayView({ me }: { me: Me }) {
           </ul>
         )}
         <p>
-          <Link to="/schedule">Family schedule</Link> · <Link to="/tasks">All family tasks</Link>
+          See the whole <Link to="/schedule">family schedule</Link> or <Link to="/tasks">assign a task</Link>.
         </p>
       </section>
 
@@ -87,10 +88,10 @@ function TodayView({ me }: { me: Me }) {
                 <strong>{next.title}</strong>
                 <br />
                 <span className="muted">
-                  {next.question_count} questions ·{" "}
+                  {next.question_count} questions.{" "}
                   {next.needed_for_task
-                    ? "one of your open tasks needs this lesson"
-                    : `prepares you to: ${next.related_task}`}
+                    ? "One of your open tasks needs this lesson."
+                    : `Prepares you to: ${next.related_task}.`}
                 </span>
               </p>
               <div className="button-row">
@@ -104,6 +105,7 @@ function TodayView({ me }: { me: Me }) {
           <p className="result-pass">✓ You have passed every lesson.</p>
         )}
       </section>
+      </div>
     </>
   );
 }

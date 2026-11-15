@@ -53,7 +53,7 @@ function LessonList({ name }: { name: string }) {
               <span className="lesson-card-text">
                 <span className="lesson-title">{l.title}</span>
                 <span className="muted">
-                  {l.question_count} questions · prepares you to: {l.related_task}
+                  {l.question_count} questions. Prepares you to: {l.related_task}.
                 </span>
                 <LessonStatus lesson={l} />
               </span>
@@ -70,11 +70,11 @@ function LessonStatus({ lesson }: { lesson: LessonSummary }) {
     return <span className="status-pill">Not started</span>;
   }
   if (lesson.status === "passed") {
-    return <span className="status-pill result-pass">✓ Passed · {formatDate(lesson.achieved_at)}</span>;
+    return <span className="status-pill result-pass">✓ Passed on {formatDate(lesson.achieved_at)}</span>;
   }
   return (
     <span className="status-pill result-partial">
-      Best result: {lesson.best_score}/{lesson.best_total} · not passed yet
+      Best result: {lesson.best_score}/{lesson.best_total}, not passed yet
     </span>
   );
 }

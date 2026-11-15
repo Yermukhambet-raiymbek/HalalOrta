@@ -53,26 +53,23 @@ export default function HomePage() {
         />
       </section>
 
-      <ol className="feature-list">
+      <ul className="feature-list">
         <li>
-          <span className="step-number">1</span>
           <strong>Learn together</strong>
           <span>Short illustrated lessons on baby care, each with a quiz.</span>
         </li>
         <li>
-          <span className="step-number">2</span>
           <strong>See who is prepared</strong>
           <span>Everyone's results in one family table.</span>
         </li>
         <li>
-          <span className="step-number">3</span>
           <strong>Share the day</strong>
           <span>
             One color-coded schedule for feeds, medicine, visits and shopping. Care tasks show whether the person
             doing them has passed the lesson.
           </span>
         </li>
-      </ol>
+      </ul>
 
       <section className="card">
         <h2>Create your family</h2>

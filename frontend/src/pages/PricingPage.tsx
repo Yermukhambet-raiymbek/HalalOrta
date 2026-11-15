@@ -43,7 +43,7 @@ export default function PricingPage() {
       <section className="card">
         <h2>Family Premium</h2>
         <p className="price">
-          $14.99 <span className="muted">per family per month · planned, not on sale yet</span>
+          $14.99 <span className="muted">per family per month, planned, not on sale yet</span>
         </p>
         <ul className="plain-list">
           {PREMIUM.map((item) => (

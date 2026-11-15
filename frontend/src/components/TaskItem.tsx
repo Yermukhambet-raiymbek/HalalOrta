@@ -32,37 +32,45 @@ export default function TaskItem({ task, meId, onChanged }: Props) {
 
   return (
     <li className={`task category-${task.category}${done ? " task-done" : ""}`}>
-      <div className="task-main">
-        <span className="task-heading">
-          {task.due_time && <span className="task-time">{formatTime(task.due_time)}</span>}
-          <span className="task-title">{task.title}</span>
-          <span className="category-tag">{categoryLabel(task.category)}</span>
-        </span>
-        <span className="muted">
-          For {mine ? "you" : task.assignee.name} ·{" "}
-          {done && task.completed_at ? (
-            `done ${formatDate(task.completed_at)}`
-          ) : overdue ? (
-            <span className="result-fail">overdue since {formatDay(task.due_date)}</span>
-          ) : (
-            `due ${formatDay(task.due_date).toLowerCase()}`
-          )}{" "}
-          · assigned by {task.created_by.id === meId ? "you" : task.created_by.name}
-        </span>
-        <LessonNote task={task} mine={mine} />
-        {error && (
-          <span className="form-error" role="alert">
-            {error}
+      <span className="task-when">
+        {task.due_time ? (
+          <span className="task-time">{formatTime(task.due_time)}</span>
+        ) : (
+          <span className="task-anytime">Any time</span>
+        )}
+      </span>
+      <div className="task-body">
+        <div className="task-main">
+          <span className="task-heading">
+            <span className="task-title">{task.title}</span>
+            <span className="category-tag">{categoryLabel(task.category)}</span>
           </span>
+          <span className="muted">
+            For {mine ? "you" : task.assignee.name},{" "}
+            {done && task.completed_at ? (
+              `done ${formatDate(task.completed_at)}`
+            ) : overdue ? (
+              <span className="result-fail">overdue since {formatDay(task.due_date)}</span>
+            ) : (
+              `due ${formatDay(task.due_date).toLowerCase()}`
+            )}
+            . Assigned by {task.created_by.id === meId ? "you" : task.created_by.name}.
+          </span>
+          <LessonNote task={task} mine={mine} />
+          {error && (
+            <span className="form-error" role="alert">
+              {error}
+            </span>
+          )}
+        </div>
+        {mine ? (
+          <button type="button" onClick={() => void setStatus(done ? "open" : "done")} disabled={saving}>
+            {saving ? "Saving…" : done ? "Reopen" : "Mark as done"}
+          </button>
+        ) : (
+          <span className={done ? "status-pill result-pass" : "status-pill"}>{done ? "✓ Done" : "Open"}</span>
         )}
       </div>
-      {mine ? (
-        <button type="button" onClick={() => void setStatus(done ? "open" : "done")} disabled={saving}>
-          {saving ? "Saving…" : done ? "Reopen" : "Mark as done"}
-        </button>
-      ) : (
-        <span className={done ? "status-pill result-pass" : "status-pill"}>{done ? "✓ Done" : "Open"}</span>
-      )}
     </li>
   );
 }
@@ -82,7 +90,7 @@ function LessonNote({ task, mine }: { task: Task; mine: boolean }) {
   if (task.status === "done") {
     return (
       <span className="lesson-note muted">
-        Lesson for this task: {link} · {mine ? "you have" : `${task.assignee.name} has`} not passed it
+        Lesson for this task: {link}. {mine ? "You have" : `${task.assignee.name} has`} not passed it.
       </span>
     );
   }
