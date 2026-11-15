@@ -1,0 +1,18 @@
+# Dependencies and build output
+frontend/node_modules/
+frontend/dist/
+backend/static/
+*.exe
+
+# Local secrets and personal settings
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+
+# Tool output
+.playwright-mcp/
+
+# OS files
+.DS_Store
+Thumbs.db

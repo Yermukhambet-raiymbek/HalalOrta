@@ -1,0 +1,31 @@
+# Local run: the app (API + built frontend) together with PostgreSQL.
+# The credentials below are for this local database only.
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: littlevillage
+      POSTGRES_PASSWORD: littlevillage
+      POSTGRES_DB: littlevillage
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U littlevillage -d littlevillage"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgres://littlevillage:littlevillage@db:5432/littlevillage?sslmode=disable
+      PORT: "8080"
+      STATIC_DIR: /app/static
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
